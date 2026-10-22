@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+{% block title %}Student Profile: {{ student.full_name }} — LappyShare Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('admin.students') }}" class="btn btn-outline btn-sm">&larr; Back to Students List</a>
+  </div>
+
+  <!-- Student Card -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <div class="card-body" style="padding: 2rem;">
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 1rem;">
+        <div>
+          <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+            <span class="badge badge-info">{{ student.role|capitalize }}</span>
+            {% if student.is_active %}
+              <span class="badge badge-success">Active Account</span>
+            {% else %}
+              <span class="badge badge-danger">Suspended</span>
+            {% endif %}
+          </div>
+          <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--primary);">{{ student.full_name }}</h1>
+          <p style="color: var(--text-muted);">{{ student.email }} &bull; Phone: {{ student.phone }}</p>
+        </div>
+
+        <div style="text-align: right;">
+          <div class="coin-badge" style="font-size: 1rem; padding: 0.4rem 1rem;">
+            <i data-lucide="award"></i> {{ student.coin_balance }} LappyCoins
+          </div>
+        </div>
+      </div>
+
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-top: 1.5rem; background: var(--bg-alt); padding: 1.25rem; border-radius: var(--radius-md);">
+        <div>
+          <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">College</span>
+          <strong style="color: var(--primary);">{{ student.college_name }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Department</span>
+          <strong style="color: var(--primary);">{{ student.department }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Year of Study</span>
+          <strong style="color: var(--primary);">{{ student.year_of_study }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Roll Number</span>
+          <strong style="color: var(--primary);">{{ student.roll_number or 'N/A' }}</strong>
+        </div>
+        <div>
+          <span style="font-size: 0.78rem; color: var(--text-muted); display: block;">Registered Since</span>
+          <strong style="color: var(--primary);">{{ student.created_at|format_date }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Listings & Borrowing Histories -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2rem;">
+    <!-- Laptops listed -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Laptops Listed ({{ laptops|length }})</h3>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        {% if laptops %}
+        <div class="table-responsive">
+          <table class="table" style="font-size: 0.88rem;">
+            <thead>
+              <tr>
+                <th>Device</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for l in laptops %}
+              <tr>
+                <td>
+                  <strong>{{ l.title }}</strong>
+                  <div style="font-size: 0.78rem; color: var(--text-muted);">{{ l.ram }} &bull; {{ l.storage }}</div>
+                </td>
+                <td><span class="badge {{ l.current_status|status_badge }}">{{ l.current_status }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">No laptops listed.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Borrowing history -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Borrowing Requests ({{ borrowed_requests|length }})</h3>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        {% if borrowed_requests %}
+        <div class="table-responsive">
+          <table class="table" style="font-size: 0.88rem;">
+            <thead>
+              <tr>
+                <th>Ref</th>
+                <th>Laptop</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for r in borrowed_requests %}
+              <tr>
+                <td><strong style="font-family: monospace;">{{ r.reference_code }}</strong></td>
+                <td>{{ r.laptop.title }}</td>
+                <td><span class="badge {{ r.status|status_badge }}">{{ r.status }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">No borrowing requests made.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

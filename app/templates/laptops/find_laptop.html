@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block title %}Find a Laptop — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="margin-bottom: 2rem;">
+    <h1 style="font-size: 2.15rem; font-weight: 800; color: var(--primary); margin-bottom: 0.5rem;">
+      Find an Academic Laptop
+    </h1>
+    <p style="color: var(--text-muted); font-size: 1rem;">
+      Browse available hardware listed by students for programming, machine learning, and laboratory coursework.
+    </p>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="card" style="margin-bottom: 2.5rem;">
+    <div class="card-body" style="padding: 1.5rem;">
+      <form action="{{ url_for('laptops.find') }}" method="GET">
+        <!-- Keyword Search -->
+        <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+          <div style="flex: 1; min-width: 250px;">
+            <input type="text" name="q" class="form-control" placeholder="Search by model, CPU, RAM, or course (e.g. PyTorch, Ryzen, 16GB)..." value="{{ search_query }}">
+          </div>
+          <button type="submit" class="btn btn-primary">
+            <i data-lucide="search"></i> Search
+          </button>
+          {% if search_query or brand_filter or ram_filter or os_filter or condition_filter or start_date %}
+            <a href="{{ url_for('laptops.find') }}" class="btn btn-outline">Clear Filters</a>
+          {% endif %}
+        </div>
+
+        <!-- Filter Selects -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 1rem;">
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">Brand</label>
+            <select name="brand" class="form-select" onchange="this.form.submit()">
+              <option value="">All Brands</option>
+              {% for b in brands %}
+                <option value="{{ b }}" {% if brand_filter == b %}selected{% endif %}>{{ b }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">RAM Memory</label>
+            <select name="ram" class="form-select" onchange="this.form.submit()">
+              <option value="">Any RAM</option>
+              <option value="8 GB" {% if ram_filter == '8 GB' %}selected{% endif %}>8 GB</option>
+              <option value="16 GB" {% if ram_filter == '16 GB' %}selected{% endif %}>16 GB</option>
+              <option value="32 GB" {% if ram_filter == '32 GB' %}selected{% endif %}>32 GB</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">Operating System</label>
+            <select name="os" class="form-select" onchange="this.form.submit()">
+              <option value="">Any OS</option>
+              <option value="Windows" {% if os_filter == 'Windows' %}selected{% endif %}>Windows</option>
+              <option value="Linux" {% if os_filter == 'Linux' %}selected{% endif %}>Linux / Ubuntu</option>
+              <option value="macOS" {% if os_filter == 'macOS' %}selected{% endif %}>macOS</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">Condition</label>
+            <select name="condition" class="form-select" onchange="this.form.submit()">
+              <option value="">Any Condition</option>
+              <option value="Excellent" {% if condition_filter == 'Excellent' %}selected{% endif %}>Excellent</option>
+              <option value="Good" {% if condition_filter == 'Good' %}selected{% endif %}>Good</option>
+              <option value="Fair" {% if condition_filter == 'Fair' %}selected{% endif %}>Fair</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">Available From</label>
+            <input type="date" name="start_date" class="form-control" value="{{ start_date }}" onchange="this.form.submit()">
+          </div>
+
+          <div>
+            <label class="form-label" style="font-size: 0.8rem;">Available Until</label>
+            <input type="date" name="end_date" class="form-control" value="{{ end_date }}" onchange="this.form.submit()">
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Results Count -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <div style="font-size: 0.95rem; color: var(--text-muted);">
+      Showing <strong>{{ laptops|length }}</strong> available devices
+    </div>
+  </div>
+
+  <!-- Laptop Cards Grid -->
+  {% if laptops %}
+  <div class="laptops-grid">
+    {% for laptop in laptops %}
+    <div class="laptop-card">
+      {% if laptop.image_path %}
+        <img src="{{ url_for('static', filename=laptop.image_path) }}" alt="{{ laptop.title }}" class="laptop-card-img">
+      {% else %}
+        <div class="laptop-card-placeholder">
+          <i data-lucide="laptop" style="width: 44px; height: 44px; stroke-width: 1.5;"></i>
+          <span style="font-size: 0.82rem; font-weight: 600;">{{ laptop.brand }} Laptop</span>
+        </div>
+      {% endif %}
+
+      <div class="laptop-card-body">
+        <div class="laptop-card-meta">
+          <span class="badge {{ laptop.condition|lower }} badge-info">{{ laptop.condition }}</span>
+          <span class="badge {{ laptop.current_status|status_badge }}">{{ laptop.current_status }}</span>
+        </div>
+
+        <h3 class="laptop-card-title">{{ laptop.title }}</h3>
+
+        <div class="laptop-specs-pills">
+          <span class="spec-pill"><i data-lucide="cpu" style="width: 12px; height: 12px; display: inline;"></i> {{ laptop.processor }}</span>
+          <span class="spec-pill">{{ laptop.ram }}</span>
+          <span class="spec-pill">{{ laptop.storage }}</span>
+          <span class="spec-pill">{{ laptop.operating_system }}</span>
+        </div>
+
+        {% if laptop.academic_suitability %}
+        <p class="laptop-suitability">
+          <strong>Best For:</strong> {{ laptop.academic_suitability }}
+        </p>
+        {% endif %}
+      </div>
+
+      <div class="laptop-card-footer">
+        <span style="font-size: 0.82rem; color: var(--text-muted);">
+          Lender: <strong>{{ laptop.lender.full_name.split(' ')[0] }}</strong> ({{ laptop.lender.department }})
+        </span>
+        <a href="{{ url_for('laptops.detail', laptop_id=laptop.id) }}" class="btn btn-secondary btn-sm">
+          View & Request
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon"><i data-lucide="search-x"></i></div>
+    <h3 class="empty-state-title">No Laptops Found</h3>
+    <p class="empty-state-desc">No laptops match your search criteria or the requested availability dates. Try broadening your filters.</p>
+    <a href="{{ url_for('laptops.find') }}" class="btn btn-outline">Reset Search Filters</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

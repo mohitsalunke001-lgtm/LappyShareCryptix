@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+{% block title %}Lender Hub — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <!-- Welcome Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div class="hero-badge" style="background: var(--secondary-light); color: var(--secondary-hover); border: none; margin-bottom: 0.5rem;">
+        <i data-lucide="laptop" style="width: 14px; height: 14px;"></i>
+        <span>Lender Dashboard</span>
+      </div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">
+        Welcome back, {{ user.full_name }}
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Empowering peers with technology &bull; {{ user.department }} &bull; {{ user.college_name }}
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.85rem; align-items: center;">
+      <a href="{{ url_for('lender.add_laptop') }}" class="btn btn-primary btn-lg">
+        <i data-lucide="plus-circle"></i> Add a Laptop
+      </a>
+      <a href="{{ url_for('rewards.index') }}" class="coin-badge" style="padding: 0.5rem 1rem; font-size: 0.95rem;">
+        <i data-lucide="award"></i> {{ user.coin_balance }} Coins
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon primary"><i data-lucide="laptop"></i></div>
+      <div>
+        <div class="stat-value">{{ total_laptops }}</div>
+        <div class="stat-label">Listed Laptops</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success"><i data-lucide="check-circle-2"></i></div>
+      <div>
+        <div class="stat-value">{{ available_laptops }}</div>
+        <div class="stat-label">Available Devices</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon warning"><i data-lucide="bell"></i></div>
+      <div>
+        <div class="stat-value">{{ pending_requests_count }}</div>
+        <div class="stat-label">Pending Inquiries</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon secondary"><i data-lucide="repeat"></i></div>
+      <div>
+        <div class="stat-value">{{ lent_count }}</div>
+        <div class="stat-label">Currently Lent</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+    <!-- Recent Incoming Requests -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Pending & Recent Incoming Requests</h3>
+        <a href="{{ url_for('lender.incoming_requests') }}" class="btn btn-outline btn-sm">View All &rarr;</a>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        {% if recent_incoming %}
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Student</th>
+                <th>Laptop</th>
+                <th>Dates</th>
+                <th>Purpose</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for req in recent_incoming %}
+              <tr>
+                <td>
+                  <strong>{{ req.borrower.full_name }}</strong>
+                  <div style="font-size: 0.8rem; color: var(--text-muted);">{{ req.borrower.department }} ({{ req.borrower.year_of_study }})</div>
+                </td>
+                <td>{{ req.laptop.title }}</td>
+                <td>{{ req.start_date|format_date("%b %d") }} - {{ req.end_date|format_date("%b %d") }}</td>
+                <td><span title="{{ req.purpose_details or req.purpose }}">{{ req.purpose }}</span></td>
+                <td><span class="badge {{ req.status|status_badge }}">{{ req.status }}</span></td>
+                <td>
+                  {% if req.status == 'pending' %}
+                    <div style="display: flex; gap: 0.35rem;">
+                      <form action="{{ url_for('lender.accept_request', request_id=req.id) }}" method="POST">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                      </form>
+                      <a href="{{ url_for('lender.incoming_requests') }}" class="btn btn-outline btn-sm">Review</a>
+                    </div>
+                  {% elif req.status == 'approved' %}
+                    <a href="{{ url_for('lender.process_handover', request_id=req.id) }}" class="btn btn-primary btn-sm">Handover</a>
+                  {% elif req.status == 'borrowed' %}
+                    <a href="{{ url_for('lender.process_return', request_id=req.id) }}" class="btn btn-secondary btn-sm">Return</a>
+                  {% else %}
+                    <a href="{{ url_for('requests.details', reference_code=req.reference_code) }}" class="btn btn-outline btn-sm">Details</a>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon"><i data-lucide="inbox"></i></div>
+          <h4 class="empty-state-title">No Incoming Requests</h4>
+          <p class="empty-state-desc">You don't have any incoming borrowing requests right now.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- My Listed Laptops Quick Widget -->
+    <div>
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">My Laptop Listings</h3>
+          <a href="{{ url_for('lender.my_laptops') }}" class="btn btn-outline btn-sm">Manage</a>
+        </div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 1rem;">
+          {% if my_laptops %}
+            {% for laptop in my_laptops %}
+            <div style="border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem; display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <strong style="color: var(--primary); display: block;">{{ laptop.title }}</strong>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">{{ laptop.ram }} &bull; {{ laptop.operating_system }}</span>
+              </div>
+              <span class="badge {{ laptop.current_status|status_badge }}">{{ laptop.current_status }}</span>
+            </div>
+            {% endfor %}
+          {% else %}
+            <p style="font-size: 0.88rem; color: var(--text-muted); text-align: center; padding: 1rem 0;">
+              You have not listed any laptops yet. List your spare device to earn +10 LappyCoins!
+            </p>
+          {% endif %}
+          <a href="{{ url_for('lender.add_laptop') }}" class="btn btn-primary btn-sm" style="width: 100%; margin-top: 0.5rem;">
+            <i data-lucide="plus"></i> Add New Laptop Listing
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

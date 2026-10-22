@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Laptop Listing — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.25rem; max-width: 760px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">
+        {{ action }} Laptop Listing
+      </h1>
+      <p style="color: var(--text-muted);">
+        {% if action == 'Add' %}
+          List your laptop to help peers and earn +10 LappyCoins.
+        {% else %}
+          Update laptop specifications and maintenance status.
+        {% endif %}
+      </p>
+    </div>
+    <a href="{{ url_for('lender.my_laptops') }}" class="btn btn-outline btn-sm">&larr; Back to Listings</a>
+  </div>
+
+  <div class="card" style="box-shadow: var(--shadow-md);">
+    <div class="card-body" style="padding: 2.25rem;">
+      <form method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Brand *</label>
+            <input type="text" name="brand" class="form-control" required placeholder="e.g. Dell, Lenovo, HP, Apple" value="{{ laptop.brand if laptop else '' }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Model Name / Number *</label>
+            <input type="text" name="model" class="form-control" required placeholder="e.g. Latitude 5420 or ThinkPad E14" value="{{ laptop.model if laptop else '' }}">
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Processor (CPU) *</label>
+            <input type="text" name="processor" class="form-control" required placeholder="e.g. Intel Core i5 11th Gen / Ryzen 7" value="{{ laptop.processor if laptop else '' }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">RAM Memory *</label>
+            <select name="ram" class="form-select" required>
+              <option value="" disabled {% if not laptop %}selected{% endif %}>Select RAM</option>
+              <option value="8 GB" {% if laptop and '8 GB' in laptop.ram %}selected{% endif %}>8 GB RAM</option>
+              <option value="16 GB" {% if laptop and '16 GB' in laptop.ram %}selected{% endif %}>16 GB RAM</option>
+              <option value="32 GB" {% if laptop and '32 GB' in laptop.ram %}selected{% endif %}>32 GB RAM</option>
+              <option value="64 GB" {% if laptop and '64 GB' in laptop.ram %}selected{% endif %}>64 GB RAM</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Storage Capacity *</label>
+            <input type="text" name="storage" class="form-control" required placeholder="e.g. 512 GB NVMe SSD or 1 TB SSD" value="{{ laptop.storage if laptop else '' }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Operating System *</label>
+            <select name="operating_system" class="form-select" required>
+              <option value="" disabled {% if not laptop %}selected{% endif %}>Select OS</option>
+              <option value="Windows 11" {% if laptop and laptop.operating_system == 'Windows 11' %}selected{% endif %}>Windows 11</option>
+              <option value="Windows 10" {% if laptop and laptop.operating_system == 'Windows 10' %}selected{% endif %}>Windows 10</option>
+              <option value="Ubuntu Linux" {% if laptop and 'Ubuntu' in laptop.operating_system %}selected{% endif %}>Ubuntu Linux</option>
+              <option value="macOS" {% if laptop and 'macOS' in laptop.operating_system %}selected{% endif %}>macOS</option>
+              <option value="Dual Boot (Windows + Linux)" {% if laptop and 'Dual Boot' in laptop.operating_system %}selected{% endif %}>Dual Boot (Windows + Linux)</option>
+            </select>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Physical Condition *</label>
+            <select name="condition" class="form-select" required>
+              <option value="Excellent" {% if laptop and laptop.condition == 'Excellent' %}selected{% endif %}>Excellent (No scratches, like new)</option>
+              <option value="Good" {% if not laptop or laptop.condition == 'Good' %}selected{% endif %}>Good (Minor cosmetic wear, 100% functional)</option>
+              <option value="Fair" {% if laptop and laptop.condition == 'Fair' %}selected{% endif %}>Fair (Visible wear, battery works fine)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Academic Suitability</label>
+            <input type="text" name="academic_suitability" class="form-control" placeholder="e.g. Machine Learning, Web Dev, Embedded Systems Lab" value="{{ laptop.academic_suitability if laptop else '' }}">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Lending Guidelines & Return Expectations</label>
+          <textarea name="lending_guidelines" class="form-control" rows="3" placeholder="e.g. Please use the laptop sleeve. Return with 65W charger. Keep liquids away.">{{ laptop.lending_guidelines if laptop else '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Additional Description / Software Installed</label>
+          <textarea name="description" class="form-control" rows="3" placeholder="Describe installed developer tools, battery duration, or special notes...">{{ laptop.description if laptop else '' }}</textarea>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Laptop Photo (Optional)</label>
+          <input type="file" name="image" class="form-control" accept="image/png, image/jpeg, image/webp">
+          <span class="form-hint">Accepted formats: PNG, JPG, JPEG, WEBP. Max size: 10MB.</span>
+          {% if laptop and laptop.image_path %}
+            <div style="margin-top: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+              <span style="font-size: 0.8rem; color: var(--text-muted);">Current photo:</span>
+              <img src="{{ url_for('static', filename=laptop.image_path) }}" alt="Preview" style="height: 48px; border-radius: 4px; border: 1px solid var(--border);">
+            </div>
+          {% endif %}
+        </div>
+
+        {% if laptop %}
+        <div style="background: var(--bg-alt); padding: 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid var(--border);">
+          <h4 style="font-size: 0.95rem; color: var(--primary); margin-bottom: 0.75rem;">Listing Status & Maintenance</h4>
+          <div style="display: flex; gap: 1.5rem; margin-bottom: 0.75rem;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" name="is_active" value="1" {% if laptop.is_active %}checked{% endif %}>
+              <span style="font-size: 0.9rem; font-weight: 600;">Listing Active</span>
+            </label>
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+              <input type="checkbox" name="under_maintenance" value="1" {% if laptop.under_maintenance %}checked{% endif %}>
+              <span style="font-size: 0.9rem; font-weight: 600; color: var(--warning-text);">Under Maintenance</span>
+            </label>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label" style="font-size: 0.82rem;">Maintenance Notes (if flagged)</label>
+            <input type="text" name="maintenance_notes" class="form-control" placeholder="e.g. Battery replacement or OS upgrade scheduled" value="{{ laptop.maintenance_notes or '' }}">
+          </div>
+        </div>
+        {% endif %}
+
+        <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+          <button type="submit" class="btn btn-primary btn-lg" style="flex: 1;">
+            {{ action }} Laptop Listing
+          </button>
+          <a href="{{ url_for('lender.my_laptops') }}" class="btn btn-outline btn-lg">Cancel</a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

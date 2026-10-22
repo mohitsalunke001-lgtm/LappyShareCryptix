@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block title %}Incoming Requests — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">Incoming Borrowing Requests</h1>
+      <p style="color: var(--text-muted);">Review and manage requests submitted for your laptops</p>
+    </div>
+
+    <!-- Filter Buttons -->
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <a href="{{ url_for('lender.incoming_requests') }}" class="btn btn-sm {% if status_filter == 'all' %}btn-primary{% else %}btn-outline{% endif %}">All</a>
+      <a href="{{ url_for('lender.incoming_requests', status='pending') }}" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline{% endif %}">Pending</a>
+      <a href="{{ url_for('lender.incoming_requests', status='approved') }}" class="btn btn-sm {% if status_filter == 'approved' %}btn-primary{% else %}btn-outline{% endif %}">Approved</a>
+      <a href="{{ url_for('lender.incoming_requests', status='borrowed') }}" class="btn btn-sm {% if status_filter == 'borrowed' %}btn-primary{% else %}btn-outline{% endif %}">Currently Lent</a>
+      <a href="{{ url_for('lender.incoming_requests', status='returned') }}" class="btn btn-sm {% if status_filter == 'returned' %}btn-primary{% else %}btn-outline{% endif %}">Returned</a>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding: 0;">
+      {% if requests %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tracking Code</th>
+              <th>Student Details</th>
+              <th>Device Requested</th>
+              <th>Requested Schedule</th>
+              <th>Academic Purpose</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in requests %}
+            <tr>
+              <td>
+                <strong style="font-family: monospace; font-size: 0.88rem;">{{ req.reference_code }}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ req.created_at|format_date }}</div>
+              </td>
+              <td>
+                <strong>{{ req.borrower.full_name }}</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                  {{ req.borrower.department }} &bull; {{ req.borrower.year_of_study }}
+                </div>
+                {% if req.status in ['approved', 'borrowed', 'returned'] %}
+                  <div style="font-size: 0.82rem; color: var(--secondary); font-weight: 600; margin-top: 0.2rem;">
+                    <i data-lucide="phone" style="width: 12px; height: 12px; display: inline;"></i> {{ req.borrower.phone }}
+                  </div>
+                {% else %}
+                  <div style="font-size: 0.75rem; color: var(--text-muted); font-style: italic;">
+                    Contact hidden until accepted
+                  </div>
+                {% endif %}
+              </td>
+              <td>
+                <strong>{{ req.laptop.title }}</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ req.laptop.ram }} &bull; {{ req.laptop.operating_system }}</div>
+              </td>
+              <td>
+                <strong>{{ req.start_date|format_date("%b %d") }}</strong> to <strong>{{ req.end_date|format_date("%b %d, %Y") }}</strong>
+              </td>
+              <td>
+                <div style="font-weight: 600;">{{ req.purpose }}</div>
+                {% if req.borrower_message %}
+                  <div style="font-size: 0.8rem; color: var(--text-muted); max-width: 220px;" title="{{ req.borrower_message }}">
+                    "{{ req.borrower_message }}"
+                  </div>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge {{ req.status|status_badge }}">{{ req.status }}</span>
+                {% if req.status == 'rejected' and req.rejection_reason %}
+                  <div style="font-size: 0.75rem; color: var(--error);" title="{{ req.rejection_reason }}">Reason: {{ req.rejection_reason }}</div>
+                {% endif %}
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.35rem; align-items: center; flex-wrap: wrap;">
+                  {% if req.status == 'pending' %}
+                    <form action="{{ url_for('lender.accept_request', request_id=req.id) }}" method="POST" onsubmit="return confirm('Accept this borrowing request?');">
+                      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                      <button type="submit" class="btn btn-success btn-sm">Accept</button>
+                    </form>
+
+                    <button type="button" class="btn btn-outline btn-sm" style="color: var(--error);" onclick="document.getElementById('reject-modal-{{ req.id }}').style.display='block';">
+                      Reject
+                    </button>
+
+                    <!-- Reject Modal -->
+                    <div id="reject-modal-{{ req.id }}" style="display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+                      <div style="background: white; border-radius: var(--radius-lg); padding: 1.75rem; max-width: 440px; margin: 15% auto; box-shadow: var(--shadow-xl);">
+                        <h3 style="font-size: 1.15rem; color: var(--primary); margin-bottom: 0.75rem;">Decline Borrowing Request</h3>
+                        <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1rem;">
+                          Optional: provide a reason for {{ req.borrower.full_name }} (e.g. personal exam conflict).
+                        </p>
+                        <form action="{{ url_for('lender.reject_request', request_id=req.id) }}" method="POST">
+                          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                          <div class="form-group">
+                            <textarea name="rejection_reason" class="form-control" rows="3" placeholder="Enter reason (optional)"></textarea>
+                          </div>
+                          <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                            <button type="button" class="btn btn-outline btn-sm" onclick="document.getElementById('reject-modal-{{ req.id }}').style.display='none';">Cancel</button>
+                            <button type="submit" class="btn btn-danger btn-sm">Confirm Rejection</button>
+                          </div>
+                        </form>
+                      </div>
+                    </div>
+
+                  {% elif req.status == 'approved' %}
+                    <a href="{{ url_for('lender.process_handover', request_id=req.id) }}" class="btn btn-primary btn-sm">
+                      <i data-lucide="check"></i> Handover
+                    </a>
+                  {% elif req.status in ['borrowed', 'overdue'] %}
+                    <a href="{{ url_for('lender.process_return', request_id=req.id) }}" class="btn btn-secondary btn-sm">
+                      <i data-lucide="corner-down-left"></i> Return Check
+                    </a>
+                  {% endif %}
+
+                  <a href="{{ url_for('requests.details', reference_code=req.reference_code) }}" class="btn btn-outline btn-sm">
+                    Details
+                  </a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="inbox"></i></div>
+        <h4 class="empty-state-title">No Requests Found</h4>
+        <p class="empty-state-desc">There are no requests matching the selected status filter.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block title %}Manage Students — LappyShare Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">Registered Students</h1>
+      <p style="color: var(--text-muted);">View profiles, check lending histories, and manage student account statuses</p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
+  </div>
+
+  <!-- Search & Filter Bar -->
+  <div class="card" style="margin-bottom: 1.5rem;">
+    <div class="card-body" style="padding: 1.25rem;">
+      <form action="{{ url_for('admin.students') }}" method="GET" style="display: flex; gap: 1rem; flex-wrap: wrap;">
+        <div style="flex: 1; min-width: 200px;">
+          <input type="text" name="search" class="form-control" placeholder="Search by name, email, department, roll number..." value="{{ search }}">
+        </div>
+        <select name="role" class="form-select" style="width: auto;" onchange="this.form.submit()">
+          <option value="">All Roles</option>
+          <option value="borrower" {% if role_filter == 'borrower' %}selected{% endif %}>Borrowers</option>
+          <option value="lender" {% if role_filter == 'lender' %}selected{% endif %}>Lenders</option>
+          <option value="admin" {% if role_filter == 'admin' %}selected{% endif %}>Admins</option>
+        </select>
+        <select name="status" class="form-select" style="width: auto;" onchange="this.form.submit()">
+          <option value="">All Statuses</option>
+          <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+          <option value="suspended" {% if status_filter == 'suspended' %}selected{% endif %}>Suspended</option>
+        </select>
+        <button type="submit" class="btn btn-primary">Filter</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding: 0;">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Student Name & Email</th>
+              <th>College & Department</th>
+              <th>Year / Roll</th>
+              <th>Role</th>
+              <th>LappyCoins</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in users %}
+            <tr>
+              <td>
+                <strong>{{ s.full_name }}</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ s.email }} &bull; {{ s.phone }}</div>
+              </td>
+              <td>
+                <div>{{ s.department }}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ s.college_name }}</div>
+              </td>
+              <td>
+                <div>{{ s.year_of_study }}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ s.roll_number or 'N/A' }}</div>
+              </td>
+              <td><span class="badge badge-info">{{ s.role }}</span></td>
+              <td><strong style="color: #92400e;">{{ s.coin_balance }}</strong></td>
+              <td>
+                {% if s.is_active %}
+                  <span class="badge badge-success">Active</span>
+                {% else %}
+                  <span class="badge badge-danger">Suspended</span>
+                {% endif %}
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.35rem; align-items: center;">
+                  <a href="{{ url_for('admin.student_detail', user_id=s.id) }}" class="btn btn-outline btn-sm">Inspect</a>
+
+                  {% if not s.is_admin %}
+                  <form action="{{ url_for('admin.toggle_student_status', user_id=s.id) }}" method="POST" onsubmit="return confirm('Change active status for this user?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if s.is_active %}
+                      <button type="submit" class="btn btn-outline btn-sm" style="color: var(--error);">Suspend</button>
+                    {% else %}
+                      <button type="submit" class="btn btn-success btn-sm">Activate</button>
+                    {% endif %}
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block title %}Borrower Hub — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <!-- Welcome Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div class="hero-badge" style="background: var(--primary-light); color: var(--primary); border: none; margin-bottom: 0.5rem;">
+        <i data-lucide="book-open" style="width: 14px; height: 14px;"></i>
+        <span>Borrower Dashboard</span>
+      </div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">
+        Welcome back, {{ user.full_name }}
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        {{ user.department }} &bull; {{ user.year_of_study }} &bull; {{ user.college_name }}
+      </p>
+    </div>
+
+    <div style="display: flex; gap: 0.85rem; align-items: center;">
+      <a href="{{ url_for('laptops.find') }}" class="btn btn-secondary btn-lg">
+        <i data-lucide="search"></i> Find a Laptop
+      </a>
+      <a href="{{ url_for('rewards.index') }}" class="coin-badge" style="padding: 0.5rem 1rem; font-size: 0.95rem;">
+        <i data-lucide="award"></i> {{ user.coin_balance }} Coins
+      </a>
+    </div>
+  </div>
+
+  <!-- Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon primary"><i data-lucide="laptop"></i></div>
+      <div>
+        <div class="stat-value">{{ available_laptops_count }}</div>
+        <div class="stat-label">Available Devices</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon warning"><i data-lucide="clock"></i></div>
+      <div>
+        <div class="stat-value">{{ pending_count }}</div>
+        <div class="stat-label">Pending Requests</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon secondary"><i data-lucide="check-circle"></i></div>
+      <div>
+        <div class="stat-value">{{ approved_count }}</div>
+        <div class="stat-label">Approved Reservations</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success"><i data-lucide="activity"></i></div>
+      <div>
+        <div class="stat-value">{{ borrowed_count }}</div>
+        <div class="stat-label">Currently Borrowed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Active / Upcoming Loans -->
+  {% if active_requests %}
+  <div style="margin-bottom: 2.5rem;">
+    <h2 style="font-size: 1.4rem; color: var(--primary); font-weight: 700; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+      <i data-lucide="bell-ring" style="color: var(--secondary);"></i> Active & Upcoming Loans
+    </h2>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.25rem;">
+      {% for req in active_requests %}
+      <div class="card" style="border-left: 4px solid {% if req.is_overdue %}var(--error){% elif req.status == 'borrowed' %}var(--secondary){% else %}var(--success){% endif %};">
+        <div class="card-body">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.75rem;">
+            <div>
+              <span class="badge {{ req.status|status_badge }}">{{ req.status }}</span>
+              {% if req.is_overdue %}
+                <span class="badge badge-danger">Overdue</span>
+              {% endif %}
+            </div>
+            <span style="font-size: 0.8rem; font-family: monospace; color: var(--text-muted);">{{ req.reference_code }}</span>
+          </div>
+
+          <h3 style="font-size: 1.15rem; color: var(--primary); font-weight: 700; margin-bottom: 0.4rem;">
+            {{ req.laptop.title }}
+          </h3>
+          <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 0.85rem;">
+            <strong>Duration:</strong> {{ req.start_date|format_date }} to {{ req.end_date|format_date }}
+          </p>
+
+          <div style="background: var(--bg-alt); padding: 0.75rem 1rem; border-radius: var(--radius-md); font-size: 0.85rem; margin-bottom: 1rem;">
+            <div><strong>Lender:</strong> {{ req.laptop.lender.full_name }} ({{ req.laptop.lender.department }})</div>
+            <div><strong>Contact:</strong> {{ req.laptop.lender.phone }}</div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; justify-content: flex-end;">
+            <a href="{{ url_for('requests.details', reference_code=req.reference_code) }}" class="btn btn-outline btn-sm">
+              <i data-lucide="file-text"></i> View Coordination Details & QR
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- Recent Requests Table -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">My Recent Borrowing Requests</h3>
+      <a href="{{ url_for('borrower.my_requests') }}" class="btn btn-outline btn-sm">View All Requests &rarr;</a>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      {% if recent_requests %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tracking Code</th>
+              <th>Laptop Device</th>
+              <th>Lender</th>
+              <th>Dates</th>
+              <th>Academic Purpose</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in recent_requests %}
+            <tr>
+              <td><strong style="font-family: monospace;">{{ req.reference_code }}</strong></td>
+              <td>
+                <strong>{{ req.laptop.title }}</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">{{ req.laptop.ram }} &bull; {{ req.laptop.operating_system }}</div>
+              </td>
+              <td>{{ req.laptop.lender.full_name.split(' ')[0] }}</td>
+              <td>{{ req.start_date|format_date("%b %d") }} - {{ req.end_date|format_date("%b %d, %Y") }}</td>
+              <td><span title="{{ req.purpose_details or req.purpose }}">{{ req.purpose }}</span></td>
+              <td><span class="badge {{ req.status|status_badge }}">{{ req.status }}</span></td>
+              <td>
+                <a href="{{ url_for('requests.details', reference_code=req.reference_code) }}" class="btn btn-outline btn-sm">Details</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="laptop"></i></div>
+        <h4 class="empty-state-title">No Borrowing Requests Yet</h4>
+        <p class="empty-state-desc">You haven't requested any laptops. Browse available devices across the campus and submit a request for your labs.</p>
+        <a href="{{ url_for('laptops.find') }}" class="btn btn-secondary">Find Available Laptops</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

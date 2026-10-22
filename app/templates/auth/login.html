@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Sign In — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 4rem 1.25rem; max-width: 480px;">
+  <div class="card" style="box-shadow: var(--shadow-lg);">
+    <div class="card-header" style="text-align: center; display: block; padding: 2rem 2rem 1.25rem;">
+      <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--primary-light); color: var(--primary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+        <i data-lucide="lock" style="width: 24px; height: 24px;"></i>
+      </div>
+      <h2 style="font-size: 1.6rem; font-weight: 800; color: var(--primary);">Student Sign In</h2>
+      <p style="color: var(--text-muted); font-size: 0.9rem; margin-top: 0.25rem;">Access your borrower or lender dashboard</p>
+    </div>
+
+    <div class="card-body" style="padding: 1.5rem 2rem 2rem;">
+      <form action="{{ url_for('auth.login', next=request.args.get('next')) }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+          <label class="form-label">College Email</label>
+          <input type="email" name="email" class="form-control" placeholder="name@college.edu" required autofocus>
+        </div>
+
+        <div class="form-group">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.45rem;">
+            <label class="form-label" style="margin-bottom: 0;">Password</label>
+            <a href="{{ url_for('auth.forgot_password') }}" style="font-size: 0.82rem;">Forgot password?</a>
+          </div>
+          <input type="password" name="password" class="form-control" placeholder="Enter your password" required>
+        </div>
+
+        <div class="form-group" style="display: flex; align-items: center; gap: 0.5rem;">
+          <input type="checkbox" name="remember" id="remember" style="width: auto;">
+          <label for="remember" style="font-size: 0.88rem; color: var(--text-muted); cursor: pointer;">Stay signed in for 24 hours</label>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.5rem;">
+          Sign In
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border); font-size: 0.9rem; color: var(--text-muted);">
+        Don't have a campus account? <a href="{{ url_for('auth.register') }}" style="font-weight: 600;">Create Account</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,173 @@
+{% extends "base.html" %}
+{% block title %}LappyCoins Rewards — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div class="coin-badge" style="margin-bottom: 0.5rem;">
+        <i data-lucide="award" style="width: 14px; height: 14px;"></i>
+        <span>Merit & Reputation Ledger</span>
+      </div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">
+        LappyCoins Rewards Hub
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Recognizing students who share resources and return laptops responsibly
+      </p>
+    </div>
+
+    <div>
+      {% if user.role == 'lender' %}
+        <a href="{{ url_for('lender.add_laptop') }}" class="btn btn-primary">
+          <i data-lucide="plus"></i> List Laptop (+10 Coins)
+        </a>
+      {% else %}
+        <a href="{{ url_for('laptops.find') }}" class="btn btn-secondary">
+          <i data-lucide="search"></i> Find a Laptop
+        </a>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Balance & Stats Grid -->
+  <div class="stats-grid">
+    <div class="stat-card" style="border: 2px solid #fcd34d; background: linear-gradient(135deg, #ffffff, #fffbeb);">
+      <div class="stat-icon amber"><i data-lucide="coins"></i></div>
+      <div>
+        <div class="stat-value" style="color: #92400e;">{{ user.coin_balance }}</div>
+        <div class="stat-label">Current Balance</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success"><i data-lucide="arrow-up-right"></i></div>
+      <div>
+        <div class="stat-value">{{ total_earned }}</div>
+        <div class="stat-label">Total Coins Earned</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon secondary"><i data-lucide="layers"></i></div>
+      <div>
+        <div class="stat-value">{{ transactions|length }}</div>
+        <div class="stat-label">Recorded Transactions</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon primary"><i data-lucide="shield-check"></i></div>
+      <div>
+        <div class="stat-value">Good</div>
+        <div class="stat-label">Campus Standing</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Transaction History Table -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Transaction Ledger</h3>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        {% if transactions %}
+        <div class="table-responsive">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Activity Description</th>
+                <th>Event Type</th>
+                <th>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for tx in transactions %}
+              <tr>
+                <td>{{ tx.created_at|format_date("%b %d, %Y") }}</td>
+                <td>
+                  <strong>{{ tx.description }}</strong>
+                  {% if tx.reference_id %}
+                    <div style="font-size: 0.78rem; font-family: monospace; color: var(--text-muted);">Ref: {{ tx.reference_id }}</div>
+                  {% endif %}
+                </td>
+                <td>
+                  <span class="badge badge-secondary" style="font-size: 0.75rem;">{{ tx.event_type }}</span>
+                </td>
+                <td>
+                  {% if tx.amount > 0 %}
+                    <span style="color: var(--success); font-weight: 800; font-size: 1.05rem;">+{{ tx.amount }}</span>
+                  {% else %}
+                    <span style="color: var(--error); font-weight: 800; font-size: 1.05rem;">{{ tx.amount }}</span>
+                  {% endif %}
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+          <div class="empty-state-icon"><i data-lucide="award"></i></div>
+          <h4 class="empty-state-title">No Coins Yet</h4>
+          <p class="empty-state-desc">List a laptop or return a borrowed device on time to start earning LappyCoins.</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Educational & Rules Sidebar -->
+    <div>
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <h3 class="card-title" style="font-size: 1rem;">How to Earn LappyCoins</h3>
+        </div>
+        <div class="card-body" style="display: flex; flex-direction: column; gap: 0.85rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            <div>
+              <strong style="color: var(--primary); display: block; font-size: 0.9rem;">List an Eligible Laptop</strong>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Credited upon verified device listing</span>
+            </div>
+            <span class="badge badge-success" style="font-weight: 700; font-size: 0.85rem;">+10</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            <div>
+              <strong style="color: var(--primary); display: block; font-size: 0.9rem;">Complete Lending Period</strong>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Rewarded to lender upon safe return</span>
+            </div>
+            <span class="badge badge-success" style="font-weight: 700; font-size: 0.85rem;">+5</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); padding-bottom: 0.75rem;">
+            <div>
+              <strong style="color: var(--primary); display: block; font-size: 0.9rem;">Return Laptop On Time</strong>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Rewarded to borrower on punctual return</span>
+            </div>
+            <span class="badge badge-success" style="font-weight: 700; font-size: 0.85rem;">+2</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+              <strong style="color: var(--primary); display: block; font-size: 0.9rem;">Community / Peer Help</strong>
+              <span style="font-size: 0.78rem; color: var(--text-muted);">Admin recognized student mentoring</span>
+            </div>
+            <span class="badge badge-info" style="font-weight: 700; font-size: 0.85rem;">+5</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="background: var(--bg-alt);">
+        <div class="card-body">
+          <h4 style="font-size: 0.92rem; color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.4rem;">
+            <i data-lucide="shield-alert" style="width: 16px; height: 16px;"></i> Community Policy
+          </h4>
+          <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.55;">
+            LappyCoins are internal academic reputation points that showcase your community helpfulness and reliability on campus. Borrowing is always completely free. LappyCoins cannot be traded for fiat cash or cryptocurrency.
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

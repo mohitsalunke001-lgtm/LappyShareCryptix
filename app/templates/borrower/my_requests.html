@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}My Borrowing Requests — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">My Borrowing Requests</h1>
+      <p style="color: var(--text-muted);">Track your device reservations, approvals, and returns</p>
+    </div>
+    <a href="{{ url_for('laptops.find') }}" class="btn btn-secondary">
+      <i data-lucide="plus"></i> Request Another Laptop
+    </a>
+  </div>
+
+  <!-- Filter Pills -->
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+    <a href="{{ url_for('borrower.my_requests') }}" class="btn btn-sm {% if status_filter == 'all' %}btn-primary{% else %}btn-outline{% endif %}">All</a>
+    <a href="{{ url_for('borrower.my_requests', status='pending') }}" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline{% endif %}">Pending</a>
+    <a href="{{ url_for('borrower.my_requests', status='approved') }}" class="btn btn-sm {% if status_filter == 'approved' %}btn-primary{% else %}btn-outline{% endif %}">Approved</a>
+    <a href="{{ url_for('borrower.my_requests', status='borrowed') }}" class="btn btn-sm {% if status_filter == 'borrowed' %}btn-primary{% else %}btn-outline{% endif %}">Active Borrowed</a>
+    <a href="{{ url_for('borrower.my_requests', status='returned') }}" class="btn btn-sm {% if status_filter == 'returned' %}btn-primary{% else %}btn-outline{% endif %}">Completed</a>
+    <a href="{{ url_for('borrower.my_requests', status='overdue') }}" class="btn btn-sm {% if status_filter == 'overdue' %}btn-danger{% else %}btn-outline{% endif %}">Overdue</a>
+    <a href="{{ url_for('borrower.my_requests', status='rejected') }}" class="btn btn-sm {% if status_filter == 'rejected' %}btn-primary{% else %}btn-outline{% endif %}">Rejected</a>
+    <a href="{{ url_for('borrower.my_requests', status='cancelled') }}" class="btn btn-sm {% if status_filter == 'cancelled' %}btn-primary{% else %}btn-outline{% endif %}">Cancelled</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding: 0;">
+      {% if requests %}
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tracking Reference</th>
+              <th>Laptop Specs</th>
+              <th>Lender Details</th>
+              <th>Reservation Dates</th>
+              <th>Purpose</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for req in requests %}
+            <tr>
+              <td>
+                <strong style="font-family: monospace; font-size: 0.88rem;">{{ req.reference_code }}</strong>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ req.created_at|format_date }}</div>
+              </td>
+              <td>
+                <strong>{{ req.laptop.title }}</strong>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                  {{ req.laptop.ram }} &bull; {{ req.laptop.storage }} &bull; {{ req.laptop.operating_system }}
+                </div>
+              </td>
+              <td>
+                <div>{{ req.laptop.lender.full_name }}</div>
+                <div style="font-size: 0.8rem; color: var(--text-muted);">
+                  {{ req.laptop.lender.department }}
+                  {% if req.status in ['approved', 'borrowed'] %}
+                    &bull; <span style="color: var(--secondary); font-weight: 600;">{{ req.laptop.lender.phone }}</span>
+                  {% endif %}
+                </div>
+              </td>
+              <td>
+                <strong>{{ req.start_date|format_date("%b %d") }}</strong> to <strong>{{ req.end_date|format_date("%b %d, %Y") }}</strong>
+                {% if req.status == 'borrowed' and req.end_date < today %}
+                  <div style="color: var(--error); font-weight: 700; font-size: 0.8rem;">Due Date Passed!</div>
+                {% endif %}
+              </td>
+              <td>
+                <div style="font-weight: 600;">{{ req.purpose }}</div>
+                {% if req.purpose_details %}
+                  <div style="font-size: 0.8rem; color: var(--text-muted); max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ req.purpose_details }}">{{ req.purpose_details }}</div>
+                {% endif %}
+              </td>
+              <td>
+                <span class="badge {{ req.status|status_badge }}">{{ req.status }}</span>
+                {% if req.status == 'rejected' and req.rejection_reason %}
+                  <div style="font-size: 0.75rem; color: var(--error); margin-top: 0.2rem;" title="{{ req.rejection_reason }}">
+                    Reason: {{ req.rejection_reason }}
+                  </div>
+                {% endif %}
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.4rem; align-items: center;">
+                  <a href="{{ url_for('requests.details', reference_code=req.reference_code) }}" class="btn btn-outline btn-sm">
+                    View
+                  </a>
+
+                  {% if req.status in ['pending', 'approved'] %}
+                  <form action="{{ url_for('borrower.cancel_request', request_id=req.id) }}" method="POST" onsubmit="return confirm('Are you sure you want to cancel this request?');">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <button type="submit" class="btn btn-outline btn-sm" style="color: var(--error); border-color: var(--border);">
+                      Cancel
+                    </button>
+                  </form>
+                  {% endif %}
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <div class="empty-state-icon"><i data-lucide="file-question"></i></div>
+        <h4 class="empty-state-title">No Requests Found</h4>
+        <p class="empty-state-desc">There are no borrowing requests matching the selected filter criteria.</p>
+        <a href="{{ url_for('laptops.find') }}" class="btn btn-secondary">Find Available Laptops</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

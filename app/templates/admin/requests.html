@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block title %}All Requests — LappyShare Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">System Borrowing Requests</h1>
+      <p style="color: var(--text-muted);">Audit all campus loan transactions, scheduling conflicts, and overdue returns</p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
+  </div>
+
+  <!-- Filter Pills -->
+  <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+    <a href="{{ url_for('admin.requests') }}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline{% endif %}">All</a>
+    <a href="{{ url_for('admin.requests', status='pending') }}" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline{% endif %}">Pending</a>
+    <a href="{{ url_for('admin.requests', status='approved') }}" class="btn btn-sm {% if status_filter == 'approved' %}btn-primary{% else %}btn-outline{% endif %}">Approved</a>
+    <a href="{{ url_for('admin.requests', status='borrowed') }}" class="btn btn-sm {% if status_filter == 'borrowed' %}btn-primary{% else %}btn-outline{% endif %}">Active Borrowed</a>
+    <a href="{{ url_for('admin.requests', status='overdue') }}" class="btn btn-sm {% if status_filter == 'overdue' %}btn-danger{% else %}btn-outline{% endif %}">Overdue</a>
+    <a href="{{ url_for('admin.requests', status='returned') }}" class="btn btn-sm {% if status_filter == 'returned' %}btn-primary{% else %}btn-outline{% endif %}">Returned</a>
+    <a href="{{ url_for('admin.requests', status='rejected') }}" class="btn btn-sm {% if status_filter == 'rejected' %}btn-primary{% else %}btn-outline{% endif %}">Rejected</a>
+    <a href="{{ url_for('admin.requests', status='cancelled') }}" class="btn btn-sm {% if status_filter == 'cancelled' %}btn-primary{% else %}btn-outline{% endif %}">Cancelled</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding: 0;">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tracking Code</th>
+              <th>Borrower</th>
+              <th>Lender</th>
+              <th>Laptop Device</th>
+              <th>Schedule</th>
+              <th>Purpose</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in requests %}
+            <tr>
+              <td>
+                <strong style="font-family: monospace;">{{ r.reference_code }}</strong>
+                <div style="font-size: 0.75rem; color: var(--text-muted);">{{ r.created_at|format_date }}</div>
+              </td>
+              <td>
+                <strong>{{ r.borrower.full_name }}</strong>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ r.borrower.department }} &bull; {{ r.borrower.phone }}</div>
+              </td>
+              <td>
+                <strong>{{ r.laptop.lender.full_name }}</strong>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ r.laptop.lender.department }} &bull; {{ r.laptop.lender.phone }}</div>
+              </td>
+              <td>{{ r.laptop.title }}</td>
+              <td>
+                <div>{{ r.start_date|format_date("%b %d") }} to {{ r.end_date|format_date("%b %d") }}</div>
+                {% if r.status == 'borrowed' and r.end_date < today %}
+                  <span class="badge badge-danger">Due Date Passed</span>
+                {% endif %}
+              </td>
+              <td><span title="{{ r.purpose_details or r.purpose }}">{{ r.purpose }}</span></td>
+              <td><span class="badge {{ r.status|status_badge }}">{{ r.status }}</span></td>
+              <td>
+                <a href="{{ url_for('requests.details', reference_code=r.reference_code) }}" class="btn btn-outline btn-sm">Inspect</a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

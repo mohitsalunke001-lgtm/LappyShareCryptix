@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block title %}Safety & Responsible Lending — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3.5rem 1.25rem; max-width: 900px;">
+  <div style="text-align: center; margin-bottom: 3rem;">
+    <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--primary); margin-bottom: 0.75rem;">
+      Safety & Responsible Lending Guidelines
+    </h1>
+    <p style="color: var(--text-muted); font-size: 1.05rem;">
+      Protecting students, devices, and personal data on campus.
+    </p>
+  </div>
+
+  <div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header" style="background: var(--bg-alt);">
+      <h3 class="card-title" style="display: flex; align-items: center; gap: 0.5rem;">
+        <i data-lucide="shield-alert" style="color: var(--secondary);"></i> Rules of Engagement
+      </h3>
+    </div>
+    <div class="card-body" style="padding: 2rem; display: flex; flex-direction: column; gap: 1.5rem;">
+      <div>
+        <h4 style="color: var(--primary); margin-bottom: 0.4rem;">1. Campus In-Person Handover</h4>
+        <p style="color: var(--text-dark); line-height: 1.6;">
+          Always schedule pickups and returns in public, well-lit campus spaces such as the Central Library, Department Reading Room, or Student Activity Center. Never conduct handovers off-campus.
+        </p>
+      </div>
+
+      <div>
+        <h4 style="color: var(--primary); margin-bottom: 0.4rem;">2. Physical Inspection Checklist</h4>
+        <p style="color: var(--text-dark); line-height: 1.6;">
+          Before accepting the laptop, borrower and lender must inspect:
+        </p>
+        <ul style="padding-left: 1.5rem; margin-top: 0.4rem; color: var(--text-muted); font-size: 0.92rem; display: flex; flex-direction: column; gap: 0.25rem;">
+          <li>Screen condition (no cracks, dead pixels, or deep scratches).</li>
+          <li>Power adapter and power cable integrity.</li>
+          <li>Keyboard keys, trackpad response, and essential USB ports.</li>
+          <li>Initial battery charge status.</li>
+        </ul>
+      </div>
+
+      <div>
+        <h4 style="color: var(--primary); margin-bottom: 0.4rem;">3. Data Privacy & Account Hygiene</h4>
+        <p style="color: var(--text-dark); line-height: 1.6;">
+          Lenders must create a separate guest or standard student account on the laptop and remove personal accounts, browser cookies, and saved passwords prior to lending. Borrowers must log out of all services prior to returning the device.
+        </p>
+      </div>
+
+      <div>
+        <h4 style="color: var(--primary); margin-bottom: 0.4rem;">4. Academic Purpose Strictness</h4>
+        <p style="color: var(--text-dark); line-height: 1.6;">
+          Laptops shared on LappyShare must be used solely for educational purposes: coursework, programming, computational labs, and academic projects. Any unauthorized commercial use is prohibited.
+        </p>
+      </div>
+
+      <div>
+        <h4 style="color: var(--primary); margin-bottom: 0.4rem;">5. Damage & Late Returns</h4>
+        <p style="color: var(--text-dark); line-height: 1.6;">
+          Any physical damage reported during the return inspection is recorded in the platform's audit ledger and forwarded to the administrator. Users who fail to return devices on time risk immediate account suspension.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

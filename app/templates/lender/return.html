@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Confirm Laptop Return — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.25rem; max-width: 780px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">Laptop Return Check</h1>
+      <p style="color: var(--text-muted);">Inspect the returned device and finalize the borrowing reservation</p>
+    </div>
+    <a href="{{ url_for('lender.incoming_requests') }}" class="btn btn-outline btn-sm">&larr; Back to Requests</a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 3fr 2fr; gap: 2rem;">
+    <!-- Form -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Return Inspection Record</h3>
+      </div>
+      <div class="card-body">
+        <div style="background: var(--bg-alt); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; font-size: 0.88rem;">
+          <div><strong>Laptop:</strong> {{ request.laptop.title }}</div>
+          <div><strong>Borrower:</strong> {{ request.borrower.full_name }} ({{ request.borrower.phone }})</div>
+          <div><strong>Scheduled Due Date:</strong> {{ request.end_date|format_date }}</div>
+          <div><strong>Initial Condition:</strong> {{ record.handover_condition or 'Good' }}</div>
+        </div>
+
+        <form action="{{ url_for('lender.process_return', request_id=request.id) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="form-group">
+            <label class="form-label">Inspected Return Condition *</label>
+            <select name="return_condition" class="form-select" required>
+              <option value="Excellent">Excellent (Like new, clean)</option>
+              <option value="Good" selected>Good (Proper working condition, charger returned)</option>
+              <option value="Fair">Fair (Noticeable cosmetic marks)</option>
+              <option value="Damaged">Damaged / Hardware Issues (Requires repair)</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Return Inspection Notes</label>
+            <textarea name="return_notes" class="form-control" rows="3" placeholder="e.g. Device returned intact, charger verified, borrower logged out."></textarea>
+          </div>
+
+          <!-- Damage Reporting -->
+          <div style="background: var(--error-bg); padding: 1rem; border-radius: var(--radius-md); margin-bottom: 1.5rem; border: 1px solid #fca5a5;">
+            <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer; color: var(--error-text); font-weight: 700; margin-bottom: 0.5rem;">
+              <input type="checkbox" name="damage_reported" value="1" id="damageToggle" onchange="document.getElementById('damageBox').style.display = this.checked ? 'block' : 'none';">
+              <span>Report Damage or Missing Accessories</span>
+            </label>
+            <div id="damageBox" style="display: none; margin-top: 0.5rem;">
+              <textarea name="damage_details" class="form-control" rows="2" placeholder="Specify damaged component (screen, keyboard, charger port) or missing items..."></textarea>
+              <span class="form-hint" style="color: var(--error-text);">This will flag the device for maintenance and notify administrators for resolution.</span>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-success btn-lg" style="width: 100%;">
+            <i data-lucide="check-check"></i> Finalize Return & Claim Rewards
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- QR Return Info -->
+    <div>
+      <div class="card" style="text-align: center;">
+        <div class="card-header">
+          <h3 class="card-title" style="font-size: 1rem;">QR Code Return Option</h3>
+        </div>
+        <div class="card-body">
+          <p style="font-size: 0.82rem; color: var(--text-muted); margin-bottom: 1rem;">
+            Or show this single-use QR return token for the student to verify:
+          </p>
+          <img src="{{ url_for('requests.generate_qr', request_id=request.id, token_type='return') }}" alt="Return QR" style="max-width: 180px; margin: 0 auto 1rem; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.5rem; background: white;">
+          <div style="font-family: monospace; font-size: 0.78rem; background: var(--bg-alt); padding: 0.4rem; border-radius: var(--radius-sm); word-break: break-all;">
+            Token: {{ record.return_qr_token }}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

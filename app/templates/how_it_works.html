@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}How It Works — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3.5rem 1.25rem;">
+  <div style="text-align: center; max-width: 700px; margin: 0 auto 3.5rem;">
+    <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--primary); margin-bottom: 0.75rem;">
+      How LappyShare Works
+    </h1>
+    <p style="color: var(--text-muted); font-size: 1.05rem;">
+      A step-by-step walkthrough of voluntary campus laptop sharing for both borrowers and lenders.
+    </p>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem; margin-bottom: 4rem;">
+    <!-- Borrower Workflow -->
+    <div class="card">
+      <div class="card-header" style="background: var(--primary-light);">
+        <h3 class="card-title" style="color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="book-open"></i> For Students Who Need a Laptop (Borrowers)
+        </h3>
+      </div>
+      <div class="card-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div>
+          <h4 style="color: var(--primary); margin-bottom: 0.25rem;">1. Browse Available Hardware</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Filter by CPU, RAM (8GB, 16GB), operating system, or desired dates. View detailed specs suitable for AI/ML, coding, or lab work.</p>
+        </div>
+        <div>
+          <h4 style="color: var(--primary); margin-bottom: 0.25rem;">2. Submit Borrowing Request</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Select pickup and return dates, specify your academic purpose (e.g. practical exam, semester project), and add a note for the lender.</p>
+        </div>
+        <div>
+          <h4 style="color: var(--primary); margin-bottom: 0.25rem;">3. Meet for Campus Handover</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Once accepted, coordinate a safe pickup location on campus (e.g. college library or department lobby). Verify the device condition together.</p>
+        </div>
+        <div>
+          <h4 style="color: var(--primary); margin-bottom: 0.25rem;">4. Return on Time & Earn Reputation</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Return the laptop in good shape on or before the due date. Punctual returns earn +2 LappyCoins.</p>
+        </div>
+        <div style="margin-top: 1rem;">
+          <a href="{{ url_for('laptops.find') }}" class="btn btn-primary" style="width: 100%;">Browse Available Laptops</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lender Workflow -->
+    <div class="card">
+      <div class="card-header" style="background: var(--secondary-light);">
+        <h3 class="card-title" style="color: var(--secondary-hover); display: flex; align-items: center; gap: 0.5rem;">
+          <i data-lucide="laptop"></i> For Students Who Share Laptops (Lenders)
+        </h3>
+      </div>
+      <div class="card-body" style="display: flex; flex-direction: column; gap: 1.25rem;">
+        <div>
+          <h4 style="color: var(--primary); margin-bottom: 0.25rem;">1. List Your Spare Device</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Provide model details, RAM, storage, OS, and any specific guidelines (e.g. handle with sleeve). Receive +10 LappyCoins on listing.</p>
+        </div>
+        <div>
+          <h4 style="color: var(--primary); margin-bottom: 0.25rem;">2. Review Incoming Requests</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">See who is requesting, their department, semester, and academic purpose. Accept or decline requests based on your schedule.</p>
+        </div>
+        <div>
+          <h4 style="color: var(--primary); margin-bottom: 0.25rem;">3. Complete Handover Inspection</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Hand over the laptop and charger in person. Record initial physical condition or use our single-use QR verification.</p>
+        </div>
+        <div>
+          <h4 style="color: var(--primary); margin-bottom: 0.25rem;">4. Inspect Return & Earn Rewards</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Check the laptop upon return. Mark the reservation completed to receive +5 LappyCoins for contributing to community access.</p>
+        </div>
+        <div style="margin-top: 1rem;">
+          <a href="{{ url_for('auth.register') }}?role=lender" class="btn btn-secondary" style="width: 100%;">Share Your Laptop Today</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Academic Domains -->
+  <div class="card" style="margin-bottom: 3rem;">
+    <div class="card-body" style="padding: 2.5rem;">
+      <h2 style="font-size: 1.6rem; color: var(--primary); margin-bottom: 1.5rem; text-align: center;">
+        Academic Use Cases Supported on LappyShare
+      </h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+        <div id="aiml" style="background: var(--bg-alt); padding: 1.25rem; border-radius: var(--radius-md);">
+          <h4 style="color: var(--primary); margin-bottom: 0.5rem;"><i data-lucide="cpu"></i> AI & Machine Learning</h4>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">Laptops with dedicated NVIDIA GPUs or high memory (16GB+) for training neural nets and running PyTorch / TensorFlow scripts.</p>
+        </div>
+        <div id="coding" style="background: var(--bg-alt); padding: 1.25rem; border-radius: var(--radius-md);">
+          <h4 style="color: var(--primary); margin-bottom: 0.5rem;"><i data-lucide="code"></i> Coding & Web Labs</h4>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">Devices with modern multi-core CPUs for IDEs like VS Code, Eclipse, Android Studio, and Node.js / React full-stack frameworks.</p>
+        </div>
+        <div id="embedded" style="background: var(--bg-alt); padding: 1.25rem; border-radius: var(--radius-md);">
+          <h4 style="color: var(--primary); margin-bottom: 0.5rem;"><i data-lucide="microchip"></i> Embedded Systems</h4>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">Windows and Linux configurations for Keil uVision, Arduino IDE, MATLAB, Proteus simulations, and STM32 microcontroller tools.</p>
+        </div>
+        <div id="projects" style="background: var(--bg-alt); padding: 1.25rem; border-radius: var(--radius-md);">
+          <h4 style="color: var(--primary); margin-bottom: 0.5rem;"><i data-lucide="award"></i> Hackathons & Viva</h4>
+          <p style="color: var(--text-muted); font-size: 0.88rem;">Temporary 24-48 hour laptop loans for intense coding sprints, technical symposia, and final semester project demonstrations.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

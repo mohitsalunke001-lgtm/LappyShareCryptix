@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}About Us — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3.5rem 1.25rem; max-width: 900px;">
+  <div style="text-align: center; margin-bottom: 3rem;">
+    <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--primary); margin-bottom: 0.75rem;">
+      About LappyShare
+    </h1>
+    <p style="color: var(--text-muted); font-size: 1.1rem;">
+      Student-to-student solidarity through shared technology.
+    </p>
+  </div>
+
+  <div class="card" style="margin-bottom: 2rem;">
+    <div class="card-body" style="padding: 2.5rem;">
+      <h3 style="color: var(--primary); margin-bottom: 1rem;">Our Mission</h3>
+      <p style="color: var(--text-dark); line-height: 1.7; margin-bottom: 1.5rem;">
+        LappyShare was founded with a clear, singular vision: no engineering or college student should ever miss a practical exam, fall behind on an AI/ML lab, or abandon a technical project simply because they lack personal laptop access.
+      </p>
+      <p style="color: var(--text-dark); line-height: 1.7; margin-bottom: 1.5rem;">
+        On every college campus, dozens of laptops sit unused in student hostels and dorm rooms while fellow classmates struggle to book computer center time. LappyShare creates a secure, trusted campus bridge between students who have surplus computing hardware and those in need.
+      </p>
+
+      <h3 style="color: var(--primary); margin-top: 2rem; margin-bottom: 1rem;">Core Values</h3>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+        <div style="border-left: 3px solid var(--secondary); padding-left: 1rem;">
+          <h4 style="color: var(--primary); margin-bottom: 0.35rem;">Academic Equality</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Empowering every student with equal access to computational labs regardless of personal economic background.</p>
+        </div>
+        <div style="border-left: 3px solid var(--success); padding-left: 1rem;">
+          <h4 style="color: var(--primary); margin-bottom: 0.35rem;">100% Non-Monetary</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Borrowing is strictly free. Community contribution is rewarded through LappyCoins recognition rather than cash.</p>
+        </div>
+        <div style="border-left: 3px solid var(--warning); padding-left: 1rem;">
+          <h4 style="color: var(--primary); margin-bottom: 0.35rem;">Mutual Accountability</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Clear condition logs, campus-backed verification, and administrative audit trails ensure respect and device safety.</p>
+        </div>
+        <div style="border-left: 3px solid var(--primary); padding-left: 1rem;">
+          <h4 style="color: var(--primary); margin-bottom: 0.35rem;">Privacy & Trust</h4>
+          <p style="color: var(--text-muted); font-size: 0.92rem;">Personal contact numbers are kept private until an academic reservation is approved by both student parties.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

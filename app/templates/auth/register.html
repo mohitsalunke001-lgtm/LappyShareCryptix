@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+{% block title %}Create Account — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3.5rem 1.25rem; max-width: 650px;">
+  <div class="card" style="box-shadow: var(--shadow-lg);">
+    <div class="card-header" style="text-align: center; display: block; padding: 2rem 2rem 1.25rem;">
+      <div style="width: 50px; height: 50px; border-radius: 50%; background: var(--secondary-light); color: var(--secondary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem;">
+        <i data-lucide="user-plus" style="width: 24px; height: 24px;"></i>
+      </div>
+      <h2 style="font-size: 1.65rem; font-weight: 800; color: var(--primary);">Join LappyShare Campus</h2>
+      <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 0.25rem;">
+        Create an academic profile to start borrowing or sharing laptops
+      </p>
+    </div>
+
+    <div class="card-body" style="padding: 1.75rem 2rem 2.25rem;">
+      <form action="{{ url_for('auth.register') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" name="full_name" class="form-control" placeholder="e.g. Rahul Sharma" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">College Email *</label>
+            <input type="email" name="email" class="form-control" placeholder="student@college.edu" required>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Phone Number *</label>
+            <input type="tel" name="phone" class="form-control" placeholder="10-digit mobile number" required>
+            <span class="form-hint">Kept private until reservation is confirmed.</span>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Roll Number / Student ID</label>
+            <input type="text" name="roll_number" class="form-control" placeholder="e.g. CS2025-045">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">College / University Name *</label>
+          <input type="text" name="college_name" class="form-control" placeholder="e.g. Government Engineering College" required>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Department / Branch *</label>
+            <select name="department" class="form-select" required>
+              <option value="" disabled selected>Select Department</option>
+              <option value="Computer Science & Engineering">Computer Science & Eng</option>
+              <option value="Information Technology">Information Technology</option>
+              <option value="Electronics & Communication">Electronics & Communication</option>
+              <option value="Electrical Engineering">Electrical Engineering</option>
+              <option value="Mechanical Engineering">Mechanical Engineering</option>
+              <option value="Civil Engineering">Civil Engineering</option>
+              <option value="Data Science & AI">Data Science & AI</option>
+              <option value="Other Department">Other Department</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Year of Study *</label>
+            <select name="year_of_study" class="form-select" required>
+              <option value="" disabled selected>Select Year</option>
+              <option value="1st Year">1st Year (Freshman)</option>
+              <option value="2nd Year">2nd Year (Sophomore)</option>
+              <option value="3rd Year">3rd Year (Junior)</option>
+              <option value="4th Year">4th Year (Senior)</option>
+              <option value="Postgraduate">Postgraduate (M.Tech/MCA/MS)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Primary Account Role *</label>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 0.35rem;">
+            <label style="border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem; display: flex; align-items: flex-start; gap: 0.65rem; cursor: pointer; background: var(--bg-alt);">
+              <input type="radio" name="role" value="borrower" {% if request.args.get('role') != 'lender' %}checked{% endif %} style="margin-top: 0.2rem;">
+              <div>
+                <strong style="color: var(--primary); display: block; font-size: 0.95rem;">Borrower</strong>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">I need laptops for labs, coding, and academic work.</span>
+              </div>
+            </label>
+            <label style="border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.85rem; display: flex; align-items: flex-start; gap: 0.65rem; cursor: pointer; background: var(--bg-alt);">
+              <input type="radio" name="role" value="lender" {% if request.args.get('role') == 'lender' %}checked{% endif %} style="margin-top: 0.2rem;">
+              <div>
+                <strong style="color: var(--primary); display: block; font-size: 0.95rem;">Lender</strong>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">I want to voluntarily share my spare laptop with peers.</span>
+              </div>
+            </label>
+          </div>
+          <span class="form-hint">You can participate in both borrowing and lending regardless of selection.</span>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Password *</label>
+            <input type="password" name="password" class="form-control" placeholder="Min 6 characters" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Confirm Password *</label>
+            <input type="password" name="confirm_password" class="form-control" placeholder="Repeat password" required>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-secondary btn-lg" style="width: 100%; margin-top: 0.5rem;">
+          Complete Registration
+        </button>
+      </form>
+
+      <div style="text-align: center; margin-top: 1.75rem; padding-top: 1.25rem; border-top: 1px solid var(--border); font-size: 0.9rem; color: var(--text-muted);">
+        Already registered? <a href="{{ url_for('auth.login') }}" style="font-weight: 600;">Sign in here</a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

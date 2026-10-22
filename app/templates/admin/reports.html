@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block title %}Platform Reports & Analytics — LappyShare Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">Platform Reports & Analytics</h1>
+      <p style="color: var(--text-muted);">Summary of academic hardware sharing, student participation, and utilization</p>
+    </div>
+    <div style="display: flex; gap: 0.5rem;">
+      <button onclick="window.print();" class="btn btn-outline btn-sm">
+        <i data-lucide="printer"></i> Print Summary
+      </button>
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary btn-sm">&larr; Back to Dashboard</a>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon primary"><i data-lucide="repeat"></i></div>
+      <div>
+        <div class="stat-value">{{ total_loans }}</div>
+        <div class="stat-label">Total Loans Completed/Active</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success"><i data-lucide="users"></i></div>
+      <div>
+        <div class="stat-value">{{ active_lenders }}</div>
+        <div class="stat-label">Contributing Lenders</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon secondary"><i data-lucide="book-open"></i></div>
+      <div>
+        <div class="stat-value">{{ active_borrowers }}</div>
+        <div class="stat-label">Supported Borrowers</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon {% if overdue_count > 0 %}amber{% else %}primary{% endif %}">
+        <i data-lucide="alert-triangle"></i>
+      </div>
+      <div>
+        <div class="stat-value" style="{% if overdue_count > 0 %}color: var(--error);{% endif %}">{{ overdue_count }}</div>
+        <div class="stat-label">Overdue Loans</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Lenders -->
+  <div class="card" style="margin-bottom: 2rem;">
+    <div class="card-header">
+      <h3 class="card-title">Top Student Lenders Recognition</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Student Name</th>
+              <th>Department</th>
+              <th>Laptops Contributed</th>
+              <th>LappyCoins Balance</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for lender, count in top_lenders %}
+            <tr>
+              <td>
+                <strong>{{ lender.full_name }}</strong>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ lender.email }}</div>
+              </td>
+              <td>{{ lender.department }}</td>
+              <td><strong style="color: var(--primary);">{{ count }} devices</strong></td>
+              <td><span style="color: #92400e; font-weight: 700;">{{ lender.coin_balance }} coins</span></td>
+              <td><span class="badge badge-success">Active Member</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

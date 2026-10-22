@@ -1,0 +1,207 @@
+{% extends "base.html" %}
+{% block title %}{{ laptop.title }} — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="margin-bottom: 1.5rem;">
+    <a href="{{ url_for('laptops.find') }}" class="btn btn-outline btn-sm">&larr; Back to Laptop Catalog</a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2.5rem;">
+    <!-- Main Specs & Details -->
+    <div>
+      <div class="card" style="margin-bottom: 2rem;">
+        {% if laptop.image_path %}
+          <img src="{{ url_for('static', filename=laptop.image_path) }}" alt="{{ laptop.title }}" style="width: 100%; height: 320px; object-fit: cover;">
+        {% else %}
+          <div style="height: 240px; background: linear-gradient(135deg, #0f2b5c, #1e3a8a); display: flex; flex-direction: column; align-items: center; justify-content: center; color: white;">
+            <i data-lucide="laptop" style="width: 64px; height: 64px; stroke-width: 1.5; margin-bottom: 0.5rem;"></i>
+            <h2 style="font-size: 1.5rem; font-weight: 700;">{{ laptop.title }}</h2>
+          </div>
+        {% endif %}
+
+        <div class="card-body" style="padding: 2rem;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem; flex-wrap: wrap; gap: 0.5rem;">
+            <div>
+              <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+                <span class="badge {{ laptop.condition|lower }} badge-info">{{ laptop.condition }} Condition</span>
+                <span class="badge {{ laptop.current_status|status_badge }}">{{ laptop.current_status }}</span>
+              </div>
+              <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">{{ laptop.title }}</h1>
+            </div>
+            <div style="text-align: right;">
+              <span class="badge badge-success" style="font-size: 0.9rem; padding: 0.4rem 0.8rem;">100% Free Borrowing</span>
+            </div>
+          </div>
+
+          <!-- Specs Table Grid -->
+          <h3 style="font-size: 1.15rem; color: var(--primary); margin: 1.5rem 0 0.85rem; font-weight: 700;">
+            Technical Specifications
+          </h3>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; background: var(--bg-alt); padding: 1.25rem; border-radius: var(--radius-md); margin-bottom: 1.5rem;">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Processor (CPU)</span>
+              <strong style="color: var(--primary);">{{ laptop.processor }}</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">RAM Memory</span>
+              <strong style="color: var(--primary);">{{ laptop.ram }}</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Storage</span>
+              <strong style="color: var(--primary);">{{ laptop.storage }}</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Operating System</span>
+              <strong style="color: var(--primary);">{{ laptop.operating_system }}</strong>
+            </div>
+          </div>
+
+          {% if laptop.academic_suitability %}
+          <div style="margin-bottom: 1.5rem;">
+            <h4 style="font-size: 0.95rem; color: var(--primary); margin-bottom: 0.4rem;">Academic Suitability</h4>
+            <p style="color: var(--text-dark); background: #f0fdf4; border-left: 3px solid var(--success); padding: 0.75rem 1rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0;">
+              {{ laptop.academic_suitability }}
+            </p>
+          </div>
+          {% endif %}
+
+          {% if laptop.description %}
+          <div style="margin-bottom: 1.5rem;">
+            <h4 style="font-size: 0.95rem; color: var(--primary); margin-bottom: 0.4rem;">Description & Installed Tools</h4>
+            <p style="color: var(--text-muted); line-height: 1.6;">{{ laptop.description }}</p>
+          </div>
+          {% endif %}
+
+          {% if laptop.lending_guidelines %}
+          <div style="margin-bottom: 1.5rem;">
+            <h4 style="font-size: 0.95rem; color: var(--primary); margin-bottom: 0.4rem;">Lender's Handling Guidelines</h4>
+            <div style="background: var(--warning-bg); border-left: 3px solid var(--warning); padding: 0.75rem 1rem; border-radius: 0 var(--radius-sm) var(--radius-sm) 0; color: var(--warning-text); font-size: 0.92rem;">
+              {{ laptop.lending_guidelines }}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Schedule & Existing Bookings -->
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Reservation Schedule</h3>
+        </div>
+        <div class="card-body">
+          <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">
+            Check existing approved bookings to ensure your requested schedule does not conflict.
+          </p>
+          {% if booked_intervals %}
+            <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+              {% for b in booked_intervals %}
+                <div style="display: flex; justify-content: space-between; align-items: center; background: var(--bg-alt); padding: 0.6rem 1rem; border-radius: var(--radius-md); font-size: 0.88rem;">
+                  <span style="color: var(--primary); font-weight: 600;">
+                    Booked: {{ b.start_date|format_date }} to {{ b.end_date|format_date }}
+                  </span>
+                  <span class="badge {{ b.status|status_badge }}">{{ b.status }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div style="color: var(--success); font-weight: 600; font-size: 0.92rem; display: flex; align-items: center; gap: 0.5rem;">
+              <i data-lucide="check-circle-2"></i> No upcoming bookings on record. All dates are currently free!
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Request Sidebar Form -->
+    <div>
+      <div class="card" style="position: sticky; top: 90px; box-shadow: var(--shadow-lg);">
+        <div class="card-header" style="background: var(--primary-light);">
+          <h3 class="card-title" style="color: var(--primary);">Submit Borrowing Request</h3>
+        </div>
+        <div class="card-body" style="padding: 1.75rem;">
+          <!-- Lender Card -->
+          <div style="display: flex; align-items: center; gap: 0.85rem; padding-bottom: 1.25rem; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border);">
+            <div style="width: 44px; height: 44px; border-radius: 50%; background: var(--secondary-light); color: var(--secondary); display: flex; align-items: center; justify-content: center; font-weight: 700;">
+              {{ laptop.lender.full_name[:2].upper() }}
+            </div>
+            <div>
+              <strong style="color: var(--primary); display: block;">{{ laptop.lender.full_name }}</strong>
+              <span style="font-size: 0.8rem; color: var(--text-muted);">
+                {{ laptop.lender.department }} ({{ laptop.lender.year_of_study }})
+              </span>
+            </div>
+          </div>
+
+          {% if not current_user %}
+            <div style="text-align: center; padding: 1.5rem 0;">
+              <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 1.25rem;">
+                Please sign in with your college account to submit a borrowing request for this device.
+              </p>
+              <a href="{{ url_for('auth.login', next=request.path) }}" class="btn btn-primary" style="width: 100%;">
+                Sign In to Request
+              </a>
+              <div style="margin-top: 0.75rem;">
+                <a href="{{ url_for('auth.register') }}" style="font-size: 0.85rem;">Don't have an account? Register</a>
+              </div>
+            </div>
+          {% elif current_user.id == laptop.lender_id %}
+            <div style="text-align: center; padding: 1rem 0; color: var(--text-muted); font-size: 0.9rem;">
+              <i data-lucide="info" style="margin: 0 auto 0.5rem; color: var(--secondary);"></i>
+              <p>You are the owner of this laptop listing.</p>
+              <a href="{{ url_for('lender.edit_laptop', laptop_id=laptop.id) }}" class="btn btn-outline btn-sm" style="margin-top: 0.75rem;">Edit My Listing</a>
+            </div>
+          {% elif not laptop.is_active or laptop.under_maintenance %}
+            <div style="text-align: center; padding: 1rem 0; color: var(--error);">
+              <i data-lucide="alert-circle" style="margin: 0 auto 0.5rem;"></i>
+              <p>This laptop is currently not accepting new requests (under maintenance or temporarily paused).</p>
+            </div>
+          {% else %}
+            <form action="{{ url_for('laptops.submit_request', laptop_id=laptop.id) }}" method="POST">
+              <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+              <div class="form-group">
+                <label class="form-label">Pickup Date *</label>
+                <input type="date" name="start_date" class="form-control" required min="{{ today.isoformat() }}">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Expected Return Date *</label>
+                <input type="date" name="end_date" class="form-control" required min="{{ today.isoformat() }}">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Academic Purpose *</label>
+                <select name="purpose" class="form-select" required>
+                  <option value="" disabled selected>Select Purpose</option>
+                  <option value="Machine Learning Practicals / Model Training">Machine Learning / Model Training</option>
+                  <option value="Programming Lab & Software Development">Programming Lab & Software Dev</option>
+                  <option value="Embedded Systems Laboratory">Embedded Systems Lab</option>
+                  <option value="Web Development & Full-Stack Project">Web Development Project</option>
+                  <option value="Hackathon / Technical Competition">Hackathon / Technical Event</option>
+                  <option value="Semester Practical Exam / Viva">Semester Practical Exam / Viva</option>
+                  <option value="Other Academic Work">Other Academic Work</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Course / Project Details</label>
+                <input type="text" name="purpose_details" class="form-control" placeholder="e.g. CS501 Final Submission or Keil lab exam">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Message to Lender (Optional)</label>
+                <textarea name="borrower_message" class="form-control" rows="2" placeholder="Introduce yourself and assure responsible care..."></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-secondary btn-lg" style="width: 100%; margin-top: 0.5rem;">
+                <i data-lucide="send"></i> Request Laptop
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

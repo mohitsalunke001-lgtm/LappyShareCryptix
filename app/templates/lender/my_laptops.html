@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}My Listed Laptops — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">My Listed Laptops</h1>
+      <p style="color: var(--text-muted);">Manage your shared devices, update specifications, and adjust availability</p>
+    </div>
+    <a href="{{ url_for('lender.add_laptop') }}" class="btn btn-primary">
+      <i data-lucide="plus-circle"></i> Add Another Laptop
+    </a>
+  </div>
+
+  {% if laptops %}
+  <div class="laptops-grid">
+    {% for laptop in laptops %}
+    <div class="card" style="display: flex; flex-direction: column;">
+      {% if laptop.image_path %}
+        <img src="{{ url_for('static', filename=laptop.image_path) }}" alt="{{ laptop.title }}" class="laptop-card-img">
+      {% else %}
+        <div class="laptop-card-placeholder">
+          <i data-lucide="laptop" style="width: 44px; height: 44px; stroke-width: 1.5;"></i>
+          <span style="font-size: 0.82rem; font-weight: 600;">{{ laptop.brand }} Laptop</span>
+        </div>
+      {% endif %}
+
+      <div class="card-body" style="flex: 1;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+          <span class="badge {{ laptop.current_status|status_badge }}">{{ laptop.current_status }}</span>
+          <span style="font-size: 0.8rem; color: var(--text-muted);">{{ laptop.condition }} Condition</span>
+        </div>
+
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem;">
+          {{ laptop.title }}
+        </h3>
+
+        <div class="laptop-specs-pills" style="margin-bottom: 0.75rem;">
+          <span class="spec-pill">{{ laptop.processor }}</span>
+          <span class="spec-pill">{{ laptop.ram }}</span>
+          <span class="spec-pill">{{ laptop.storage }}</span>
+          <span class="spec-pill">{{ laptop.operating_system }}</span>
+        </div>
+
+        {% if laptop.academic_suitability %}
+          <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            <strong>Suitability:</strong> {{ laptop.academic_suitability }}
+          </div>
+        {% endif %}
+
+        {% if laptop.under_maintenance and laptop.maintenance_notes %}
+          <div style="background: var(--warning-bg); color: var(--warning-text); padding: 0.5rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.82rem; margin-bottom: 0.75rem;">
+            <strong>Maintenance:</strong> {{ laptop.maintenance_notes }}
+          </div>
+        {% endif %}
+      </div>
+
+      <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+        <a href="{{ url_for('lender.edit_laptop', laptop_id=laptop.id) }}" class="btn btn-outline btn-sm">
+          <i data-lucide="edit-3"></i> Edit
+        </a>
+
+        <form action="{{ url_for('lender.toggle_laptop_status', laptop_id=laptop.id) }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          {% if laptop.is_active %}
+            <button type="submit" class="btn btn-outline btn-sm" style="color: var(--error);">Disable</button>
+          {% else %}
+            <button type="submit" class="btn btn-success btn-sm">Activate</button>
+          {% endif %}
+        </form>
+
+        <a href="{{ url_for('laptops.detail', laptop_id=laptop.id) }}" class="btn btn-secondary btn-sm">
+          Public View
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="empty-state-icon"><i data-lucide="laptop"></i></div>
+    <h3 class="empty-state-title">No Laptops Listed Yet</h3>
+    <p class="empty-state-desc">You haven't listed any laptops to share with fellow students. List an eligible laptop now and earn +10 LappyCoins!</p>
+    <a href="{{ url_for('lender.add_laptop') }}" class="btn btn-primary">List Your Laptop Now</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

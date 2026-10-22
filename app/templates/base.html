@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}LappyShare — Peer-to-Peer Campus Laptop Network{% endblock %}</title>
+  
+  <!-- Early Theme Detection to prevent theme flicker -->
+  <script>
+    (function () {
+      try {
+        const stored = localStorage.getItem('lappyshare-theme');
+        if (stored) {
+          document.documentElement.setAttribute('data-theme', stored);
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}?v=20261016b">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}?v=20261016b">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+  <!-- Floating Island Navigation Bar -->
+  <nav class="navbar">
+    <div class="container nav-container">
+      <a href="{{ url_for('main.index') }}" class="brand-logo">
+        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="2" y1="20" x2="22" y2="20"></line>
+        </svg>
+        <span>LappyShare</span>
+        <span class="tagline-pill">Campus Cloud</span>
+      </a>
+
+      <ul class="nav-links">
+        <li><a href="{{ url_for('main.index') }}">Home</a></li>
+        <li><a href="{{ url_for('laptops.find') }}">Find Laptop</a></li>
+        <li><a href="{{ url_for('main.how_it_works') }}">How It Works</a></li>
+        <li><a href="{{ url_for('main.safety') }}">Safety</a></li>
+        <li><a href="{{ url_for('main.about') }}">About</a></li>
+        <li><a href="{{ url_for('main.contact') }}">Contact</a></li>
+      </ul>
+
+      <div class="nav-actions">
+        <!-- Theme Toggle Switcher -->
+        <button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Dark/Light Mode" title="Toggle Theme">
+          <i data-lucide="moon" class="theme-icon-moon" style="width: 17px; height: 17px;"></i>
+          <i data-lucide="sun" class="theme-icon-sun" style="width: 17px; height: 17px;"></i>
+        </button>
+
+        {% if current_user %}
+          <!-- LappyCoins Balance -->
+          <a href="{{ url_for('rewards.index') }}" class="coin-badge" title="Your LappyCoins Balance">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v12M15 9.5a3.5 3.5 0 0 0-7 0c0 2 2 3 4 3s4 1 4 3a3.5 3.5 0 0 1-7 0"/></svg>
+            <span>{{ current_user.coin_balance }} Coins</span>
+          </a>
+
+          <!-- In-app Notifications Bell -->
+          <div class="notif-bell-wrapper">
+            <a href="{{ url_for('notifications.index') }}" class="notif-bell-btn" title="Notifications">
+              <i data-lucide="bell" style="width: 17px; height: 17px;"></i>
+              {% if unread_count > 0 %}
+                <span class="notif-counter">{{ unread_count }}</span>
+              {% endif %}
+            </a>
+          </div>
+
+          <!-- User Role Navigation -->
+          {% if current_user.is_admin %}
+            <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline-primary btn-sm">Admin Panel</a>
+          {% elif current_user.role == 'lender' %}
+            <a href="{{ url_for('lender.dashboard') }}" class="btn btn-outline-primary btn-sm">Lender Hub</a>
+            <a href="{{ url_for('borrower.dashboard') }}" class="btn btn-outline btn-sm" title="Switch to Borrower View">Borrower Hub</a>
+          {% else %}
+            <a href="{{ url_for('borrower.dashboard') }}" class="btn btn-outline-primary btn-sm">Borrower Hub</a>
+            <a href="{{ url_for('lender.dashboard') }}" class="btn btn-outline btn-sm" title="Share a Laptop as Lender">Lender Hub</a>
+          {% endif %}
+
+          <!-- Profile / Logout -->
+          <div class="user-menu-pill">
+            <a href="{{ url_for('auth.account') }}" style="color: inherit; text-decoration: none;">
+              {{ current_user.full_name.split(' ')[0] }}
+            </a>
+            <a href="{{ url_for('auth.logout') }}" title="Sign Out" style="color: var(--text-muted); display: flex;">
+              <i data-lucide="log-out" style="width: 15px; height: 15px;"></i>
+            </a>
+          </div>
+        {% else %}
+          <a href="{{ url_for('auth.login') }}" class="btn btn-outline btn-sm">Sign In</a>
+          <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-sm btn-shimmer">Create Account</a>
+        {% endif %}
+
+        <button class="mobile-menu-btn" aria-label="Toggle Navigation">
+          <i data-lucide="menu" style="width: 20px; height: 20px;"></i>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Flash Messages -->
+  <div class="container flash-container">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for category, message in messages %}
+          <div class="alert alert-{{ category }}">
+            <i data-lucide="info" style="min-width: 18px; width: 18px; height: 18px;"></i>
+            <div>{{ message }}</div>
+          </div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+  </div>
+
+  <!-- Main Content Block -->
+  <main style="flex: 1;">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- Global Glassmorphic Footer -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <div style="display: flex; align-items: center; gap: 0.6rem; margin-bottom: 0.75rem;">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2.5"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="20" x2="22" y2="20"></line></svg>
+            <h3 style="margin: 0;">LappyShare</h3>
+          </div>
+          <p>A voluntary, peer-to-peer campus hardware network empowering students with equal access to high-compute laptops for AI/ML, coding, and academic growth.</p>
+        </div>
+        <div class="footer-col">
+          <h4>Platform</h4>
+          <ul>
+            <li><a href="{{ url_for('laptops.find') }}">Find a Laptop</a></li>
+            <li><a href="{{ url_for('auth.register') }}?role=lender">Share Your Device</a></li>
+            <li><a href="{{ url_for('rewards.index') }}">LappyCoins Rewards</a></li>
+            <li><a href="{{ url_for('requests.verify_qr') }}">QR Handover Check</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Academic Use</h4>
+          <ul>
+            <li><a href="{{ url_for('main.how_it_works') }}#aiml">AI & Deep Learning Labs</a></li>
+            <li><a href="{{ url_for('main.how_it_works') }}#coding">DevOps & Cloud Practicals</a></li>
+            <li><a href="{{ url_for('main.how_it_works') }}#embedded">Embedded & VLSI Systems</a></li>
+            <li><a href="{{ url_for('main.how_it_works') }}#projects">Hackathons & Capstones</a></li>
+          </ul>
+        </div>
+        <div class="footer-col">
+          <h4>Support & Safety</h4>
+          <ul>
+            <li><a href="{{ url_for('main.safety') }}">Safety & Handover Protocol</a></li>
+            <li><a href="{{ url_for('main.about') }}">About Our Initiative</a></li>
+            <li><a href="{{ url_for('main.contact') }}">Contact Campus Team</a></li>
+            <li><a href="{{ url_for('auth.login') }}">Student Sign In</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p>&copy; 2026 LappyShare Network. Engineered for Campus Academic Equity. Share. Learn. Grow.</p>
+      </div>
+    </div>
+  </footer>
+
+  <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+  <script>
+    if (typeof lucide !== 'undefined') {
+      lucide.createIcons();
+    }
+  </script>
+  {% block extra_scripts %}{% endblock %}
+</body>
+</html>

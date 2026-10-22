@@ -1,0 +1,248 @@
+{% extends "base.html" %}
+{% block title %}Administrator Control Center — LappyShare{% endblock %}
+
+{% block extra_head %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <!-- Header -->
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <div class="hero-badge" style="background: var(--primary); color: white; border: none; margin-bottom: 0.5rem;">
+        <i data-lucide="shield" style="width: 14px; height: 14px;"></i>
+        <span>Campus Administration Panel</span>
+      </div>
+      <h1 style="font-size: 2.15rem; font-weight: 800; color: var(--primary);">Platform Control Center</h1>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        Real-time metrics, student management, device oversight, and audit controls
+      </p>
+    </div>
+
+    <!-- Admin Nav Shortcuts -->
+    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+      <a href="{{ url_for('admin.students') }}" class="btn btn-outline btn-sm">Students</a>
+      <a href="{{ url_for('admin.laptops') }}" class="btn btn-outline btn-sm">Laptops</a>
+      <a href="{{ url_for('admin.requests') }}" class="btn btn-outline btn-sm">Requests</a>
+      <a href="{{ url_for('admin.coins') }}" class="btn btn-outline btn-sm">LappyCoins</a>
+      <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline btn-sm">Audit Trail</a>
+      <a href="{{ url_for('admin.reports') }}" class="btn btn-primary btn-sm">Reports</a>
+    </div>
+  </div>
+
+  <!-- Primary Metrics Grid -->
+  <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+    <div class="stat-card">
+      <div class="stat-icon primary"><i data-lucide="users"></i></div>
+      <div>
+        <div class="stat-value">{{ total_users }}</div>
+        <div class="stat-label">Students ({{ borrowers_count }} B / {{ lenders_count }} L)</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon secondary"><i data-lucide="laptop"></i></div>
+      <div>
+        <div class="stat-value">{{ total_laptops }}</div>
+        <div class="stat-label">Listings ({{ available_laptops }} free)</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon warning"><i data-lucide="clock"></i></div>
+      <div>
+        <div class="stat-value">{{ pending_requests }}</div>
+        <div class="stat-label">Pending Requests</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon success"><i data-lucide="check-circle-2"></i></div>
+      <div>
+        <div class="stat-value">{{ borrowed_active }}</div>
+        <div class="stat-label">Currently Borrowed</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon {% if overdue_count > 0 %}amber{% else %}primary{% endif %}">
+        <i data-lucide="alert-triangle"></i>
+      </div>
+      <div>
+        <div class="stat-value" style="{% if overdue_count > 0 %}color: var(--error);{% endif %}">{{ overdue_count }}</div>
+        <div class="stat-label">Overdue Loans</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon amber"><i data-lucide="award"></i></div>
+      <div>
+        <div class="stat-value" style="color: #92400e;">{{ total_coins_issued }}</div>
+        <div class="stat-label">LappyCoins Issued</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem; margin-bottom: 2.5rem;">
+    <!-- Chart 1: Request Status Breakdown -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title" style="font-size: 1.05rem;">Request Status Breakdown</h3>
+      </div>
+      <div class="card-body" style="height: 280px; display: flex; align-items: center; justify-content: center;">
+        <canvas id="statusChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Chart 2: Top Laptop Brands -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title" style="font-size: 1.05rem;">Hardware Inventory by Brand</h3>
+      </div>
+      <div class="card-body" style="height: 280px; display: flex; align-items: center; justify-content: center;">
+        <canvas id="brandsChart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Activity & Audit Feeds Grid -->
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.75rem;">
+    <!-- Recent Requests -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title" style="font-size: 1.05rem;">Recent Borrowing Activity</h3>
+        <a href="{{ url_for('admin.requests') }}" class="btn btn-outline btn-sm">All &rarr;</a>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        {% if recent_requests %}
+        <div class="table-responsive">
+          <table class="table" style="font-size: 0.85rem;">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Borrower</th>
+                <th>Laptop</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for req in recent_requests %}
+              <tr>
+                <td><strong style="font-family: monospace;">{{ req.reference_code }}</strong></td>
+                <td>{{ req.borrower.full_name }}</td>
+                <td>{{ req.laptop.title }}</td>
+                <td><span class="badge {{ req.status|status_badge }}">{{ req.status }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">No request records yet.</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Administrative Audit Log Feed -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title" style="font-size: 1.05rem;">Admin Audit Trail</h3>
+        <a href="{{ url_for('admin.audit_logs') }}" class="btn btn-outline btn-sm">All Logs &rarr;</a>
+      </div>
+      <div class="card-body" style="padding: 0;">
+        {% if recent_logs %}
+        <div style="display: flex; flex-direction: column;">
+          {% for log in recent_logs %}
+          <div style="padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); font-size: 0.85rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <strong style="color: var(--primary);">{{ log.action }}</strong>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">{{ log.created_at|format_date("%b %d, %H:%M") }}</span>
+            </div>
+            {% if log.details %}
+              <div style="color: var(--text-muted); font-size: 0.8rem; margin-top: 0.2rem;">{{ log.details }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div style="text-align: center; padding: 2rem; color: var(--text-muted);">No audit events recorded yet.</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    // Status Chart
+    const statusCtx = document.getElementById('statusChart');
+    if (statusCtx) {
+      new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Pending', 'Approved', 'Borrowed', 'Returned', 'Rejected', 'Cancelled'],
+          datasets: [{
+            data: [
+              {{ status_counts.get('pending', 0) }},
+              {{ status_counts.get('approved', 0) }},
+              {{ status_counts.get('borrowed', 0) }},
+              {{ status_counts.get('returned', 0) }},
+              {{ status_counts.get('rejected', 0) }},
+              {{ status_counts.get('cancelled', 0) }}
+            ],
+            backgroundColor: [
+              '#f59e0b', // warning
+              '#0284c7', // sky blue
+              '#0f2b5c', // deep blue
+              '#10b981', // green
+              '#ef4444', // red
+              '#94a3b8'  // gray
+            ],
+            borderWidth: 2,
+            borderColor: '#ffffff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'bottom' }
+          }
+        }
+      });
+    }
+
+    // Brands Chart
+    const brandsCtx = document.getElementById('brandsChart');
+    if (brandsCtx) {
+      const brandsData = [
+        {% for brand, count in brand_stats %}
+          { brand: "{{ brand }}", count: {{ count }} },
+        {% endfor %}
+      ];
+      new Chart(brandsCtx, {
+        type: 'bar',
+        data: {
+          labels: brandsData.map(d => d.brand),
+          datasets: [{
+            label: 'Laptops Listed',
+            data: brandsData.map(d => d.count),
+            backgroundColor: '#0284c7',
+            borderRadius: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 } }
+          },
+          plugins: {
+            legend: { display: false }
+          }
+        }
+      });
+    }
+  });
+</script>
+{% endblock %}

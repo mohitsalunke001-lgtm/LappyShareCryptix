@@ -1,0 +1,632 @@
+{% extends "base.html" %}
+
+{% block title %}LappyShare — Modern Campus Laptop Sharing Platform{% endblock %}
+
+{% block content %}
+<!-- Hero Section with Ambient Glow & 3D Interactive Window -->
+<section class="hero-section">
+  <div class="container">
+    <div class="hero-content">
+      <div class="hero-badge">
+        <span class="pulse-dot"></span>
+        <span>Voluntary Campus Hardware Network • Fall 2026</span>
+      </div>
+      
+      <h1 class="hero-title">
+        Share Compute. <span>Accelerate Learning.</span>
+      </h1>
+      
+      <p class="hero-subtitle">
+        LappyShare connects college students who have spare laptops with peers who need high-performance hardware for machine learning, lab practicals, coding tests, and engineering projects.
+      </p>
+      
+      <div class="hero-buttons">
+        <a href="{{ url_for('laptops.find') }}" class="btn btn-primary btn-lg btn-shimmer">
+          <i data-lucide="search" style="width: 18px; height: 18px;"></i> Find a Laptop
+        </a>
+        <a href="{{ url_for('auth.register') }}?role=lender" class="btn btn-outline btn-lg">
+          <i data-lucide="laptop" style="width: 18px; height: 18px;"></i> Share Your Device
+        </a>
+      </div>
+    </div>
+
+    <!-- Hero Interactive 3D Showcase Window -->
+    <div class="hero-window-wrapper">
+      <div class="hero-showcase-window" id="hero-window">
+        <div class="hero-window-bar">
+          <div class="window-dots">
+            <span class="window-dot red"></span>
+            <span class="window-dot yellow"></span>
+            <span class="window-dot green"></span>
+          </div>
+          <div class="window-title">
+            <i data-lucide="shield-check" style="width: 14px; height: 14px; color: var(--success);"></i>
+            <span>campus-node-04 // peer_exchange.sh</span>
+          </div>
+          <div style="font-size: 0.75rem; color: var(--primary); font-family: var(--font-mono);">
+            ● LIVE FLEET
+          </div>
+        </div>
+
+        <div class="hero-window-content">
+          <!-- Left: Hardware Node Snapshot -->
+          <div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+              <span class="badge badge-success">
+                <span class="pulse-dot"></span> Available on Campus
+              </span>
+              <span style="font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);">
+                Verified Student Peer
+              </span>
+            </div>
+
+            <h3 style="font-size: 1.35rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem;">
+              Dell XPS 15 (i7 13th Gen / RTX 4060)
+            </h3>
+            
+            <p style="font-size: 0.88rem; color: var(--text-muted); margin-bottom: 1.25rem;">
+              Configured with PyTorch, CUDA 12.2, Docker, and ROS 2 for semester robotics and AI lab coursework.
+            </p>
+
+            <div class="laptop-specs-pills" style="margin-bottom: 1.25rem;">
+              <span class="spec-pill"><i data-lucide="cpu" style="width: 12px; height: 12px;"></i> Intel i7 14-Core</span>
+              <span class="spec-pill"><i data-lucide="zap" style="width: 12px; height: 12px; color: #fbbf24;"></i> RTX 4060 8GB</span>
+              <span class="spec-pill">32 GB DDR5</span>
+              <span class="spec-pill">Ubuntu 24.04 LTS</span>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 0.85rem;">
+              <a href="{{ url_for('laptops.find') }}" class="btn btn-primary btn-sm">
+                Request Device <i data-lucide="arrow-right" style="width: 14px; height: 14px;"></i>
+              </a>
+              <span style="font-size: 0.82rem; color: var(--text-light); font-family: var(--font-mono);">
+                0 Coins Fee • Free Loan
+              </span>
+            </div>
+          </div>
+
+          <!-- Right: Terminal Simulator Preview -->
+          <div class="terminal-card">
+            <div class="terminal-line">
+              <span class="terminal-prompt">$</span>
+              <span>lappyshare fleet --campus-zone A</span>
+            </div>
+            <div class="terminal-output" style="margin-bottom: 0.6rem;">
+              <span style="color: #64748b;">[OK] Connected to Campus Peer Mesh</span>
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">&gt;</span>
+              <span class="terminal-highlight">CUDA Acceleration: Detected (100%)</span>
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">&gt;</span>
+              <span>Handover Check: Cryptographic QR Ready</span>
+            </div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">&gt;</span>
+              <span>Reputation Engine: +5 Coins on Return</span>
+            </div>
+            <div class="tech-pills-row" style="margin-top: 1.2rem;">
+              <span class="tech-pill">PyTorch</span>
+              <span class="tech-pill">TensorFlow</span>
+              <span class="tech-pill">Docker</span>
+              <span class="tech-pill">Vivado</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Quick Stats Strip (Glassmorphic) -->
+<div class="container" style="margin-top: 2rem; position: relative; z-index: 10;">
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-icon primary">
+        <i data-lucide="laptop" style="width: 26px; height: 26px;"></i>
+      </div>
+      <div>
+        <div class="stat-value">{{ total_laptops }}</div>
+        <div class="stat-label">Laptops Listed</div>
+      </div>
+    </div>
+    
+    <div class="stat-card">
+      <div class="stat-icon success">
+        <i data-lucide="check-circle-2" style="width: 26px; height: 26px;"></i>
+      </div>
+      <div>
+        <div class="stat-value">{{ available_count }}</div>
+        <div class="stat-label">Available Now</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon secondary">
+        <i data-lucide="users" style="width: 26px; height: 26px;"></i>
+      </div>
+      <div>
+        <div class="stat-value">{{ total_students }}</div>
+        <div class="stat-label">Registered Students</div>
+      </div>
+    </div>
+
+    <div class="stat-card">
+      <div class="stat-icon amber">
+        <i data-lucide="award" style="width: 26px; height: 26px;"></i>
+      </div>
+      <div>
+        <div class="stat-value">{{ completed_loans }}</div>
+        <div class="stat-label">Successful Loans</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Flagship Bento Grid Section -->
+<section style="padding: 4rem 0;">
+  <div class="container">
+    <div style="text-align: center; max-width: 720px; margin: 0 auto 3rem;">
+      <span class="bento-tag">
+        <i data-lucide="cpu" style="width: 14px; height: 14px;"></i> Engineered For Innovation
+      </span>
+      <h2 style="font-size: clamp(2rem, 3.5vw, 2.8rem); font-weight: 800; color: var(--text-primary); letter-spacing: -0.03em; margin-bottom: 0.85rem;">
+        Bridging the Campus Hardware Gap
+      </h2>
+      <p style="color: var(--text-muted); font-size: 1.05rem; line-height: 1.6;">
+        Every engineering student deserves the computing power needed to build models, compile kernels, and pass practical lab exams.
+      </p>
+    </div>
+
+    <!-- Asymmetrical 12-Column Bento Grid -->
+    <div class="bento-grid">
+      <!-- Bento Tile 1: Heavy Academic Workloads (7 Columns) -->
+      <div class="bento-card bento-col-7">
+        <div class="bento-header">
+          <span class="bento-tag">
+            <i data-lucide="zap" style="width: 13px; height: 13px;"></i> Compute Power
+          </span>
+          <h3 class="bento-title">High-Compute Hardware on Demand</h3>
+          <p class="bento-desc">
+            Deep learning models, embedded laboratory IDEs, Docker containers, and full-stack environments require heavy RAM and dedicated GPUs. Borrow hardware tailored for your semester workload.
+          </p>
+        </div>
+
+        <div class="bento-visual">
+          <div class="terminal-card">
+            <div class="terminal-line">
+              <span class="terminal-prompt">$</span>
+              <span>python3 train_resnet.py --device cuda:0 --epochs 50</span>
+            </div>
+            <div class="terminal-output">
+              <span class="terminal-highlight">✓ CUDA Core Enabled (NVIDIA RTX 4070)</span>
+            </div>
+            <div class="terminal-output" style="color: #64748b;">
+              Allocated 16.4 GB VRAM / Batch throughput: 420 samples/sec
+            </div>
+          </div>
+          <div class="tech-pills-row">
+            <span class="tech-pill"><i data-lucide="check" style="width: 12px; height: 12px; color: var(--success);"></i> PyTorch</span>
+            <span class="tech-pill"><i data-lucide="check" style="width: 12px; height: 12px; color: var(--success);"></i> ROS 2 Humble</span>
+            <span class="tech-pill"><i data-lucide="check" style="width: 12px; height: 12px; color: var(--success);"></i> Docker Engine</span>
+            <span class="tech-pill"><i data-lucide="check" style="width: 12px; height: 12px; color: var(--success);"></i> Quartus Prime</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Tile 2: LappyCoins Protocol (5 Columns) -->
+      <div class="bento-card bento-col-5">
+        <div class="bento-header">
+          <span class="bento-tag" style="color: #fbbf24;">
+            <i data-lucide="coins" style="width: 13px; height: 13px;"></i> Merit Economy
+          </span>
+          <h3 class="bento-title">LappyCoins Recognition</h3>
+          <p class="bento-desc">
+            Borrowing is 100% free. Students earn non-monetary LappyCoins for lending and on-time returns, building verified campus trust badges.
+          </p>
+        </div>
+
+        <div class="bento-visual" style="text-align: center;">
+          <div style="display: inline-flex; align-items: center; justify-content: center; width: 84px; height: 84px; border-radius: 50%; background: radial-gradient(circle, rgba(245, 158, 11, 0.25) 0%, transparent 70%); border: 1px solid rgba(251, 191, 36, 0.5); box-shadow: 0 0 25px rgba(245, 158, 11, 0.3); margin-bottom: 1.25rem;">
+            <i data-lucide="award" style="width: 42px; height: 42px; color: #fbbf24;"></i>
+          </div>
+          <div style="display: flex; justify-content: space-around; background: rgba(0,0,0,0.25); border-radius: var(--radius-md); padding: 0.85rem; border: 1px solid var(--border-glass);">
+            <div>
+              <div style="font-weight: 800; color: #fbbf24; font-size: 1.25rem;">+10</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">List Laptop</div>
+            </div>
+            <div style="border-left: 1px solid var(--border-glass);"></div>
+            <div>
+              <div style="font-weight: 800; color: #fbbf24; font-size: 1.25rem;">+5</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Lend Peer</div>
+            </div>
+            <div style="border-left: 1px solid var(--border-glass);"></div>
+            <div>
+              <div style="font-weight: 800; color: #fbbf24; font-size: 1.25rem;">+2</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Punctual Return</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Tile 3: Tamper-Proof QR Handover (5 Columns) -->
+      <div class="bento-card bento-col-5">
+        <div class="bento-header">
+          <span class="bento-tag" style="color: var(--success-text);">
+            <i data-lucide="qr-code" style="width: 13px; height: 13px;"></i> Verification
+          </span>
+          <h3 class="bento-title">Cryptographic QR Handover</h3>
+          <p class="bento-desc">
+            Physical handovers are authenticated directly on campus. Lenders and borrowers scan a dynamic verification code to eliminate disputes.
+          </p>
+        </div>
+
+        <div class="bento-visual">
+          <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: var(--radius-md); padding: 1.25rem; display: flex; align-items: center; gap: 1rem;">
+            <div style="width: 50px; height: 50px; background: rgba(16, 185, 129, 0.2); border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <i data-lucide="scan" style="width: 26px; height: 26px; color: var(--success-text);"></i>
+            </div>
+            <div>
+              <div style="font-weight: 700; color: var(--text-primary); font-size: 0.92rem;">Inspection Checklist</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">Screen, Ports, Battery & Charger verified before custody release.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bento Tile 4: Responsible Campus Community (7 Columns) -->
+      <div class="bento-card bento-col-7">
+        <div class="bento-header">
+          <span class="bento-tag" style="color: #c084fc;">
+            <i data-lucide="shield" style="width: 13px; height: 13px;"></i> Institutional Trust
+          </span>
+          <h3 class="bento-title">Zero Financial Cost. 100% Student Integrity</h3>
+          <p class="bento-desc">
+            No commercial rental fees. LappyShare functions on collegiate reciprocity, campus department verification, and student honor codes overseen by campus coordinators.
+          </p>
+        </div>
+
+        <div class="bento-visual">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem;">
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+                <i data-lucide="lock" style="width: 14px; height: 14px; display: inline; color: var(--primary);"></i> Privacy Guarded
+              </div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">Contact revealed only after lender reservation approval.</div>
+            </div>
+            <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid var(--border-glass); border-radius: var(--radius-md); padding: 1rem;">
+              <div style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem;">
+                <i data-lucide="graduation-cap" style="width: 14px; height: 14px; display: inline; color: #a855f7;"></i> College Email Verified
+              </div>
+              <div style="font-size: 0.78rem; color: var(--text-muted);">Only active enrolled students can list or request gear.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Featured Laptops Showcase with Interactive Filter Chips -->
+{% if featured_laptops %}
+<section style="padding: 4.5rem 0; border-top: 1px solid var(--border-glass); border-bottom: 1px solid var(--border-glass); background: rgba(0, 0, 0, 0.1);">
+  <div class="container">
+    <div style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+      <div>
+        <span class="bento-tag">
+          <i data-lucide="sparkles" style="width: 14px; height: 14px;"></i> Ready for Academic Work
+        </span>
+        <h2 style="font-size: clamp(1.8rem, 3vw, 2.4rem); font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">
+          Featured Campus Fleet
+        </h2>
+        <p style="color: var(--text-muted); margin-top: 0.35rem;">
+          Browse student-listed devices ready for coursework, lab assignments, and project submissions.
+        </p>
+      </div>
+      <a href="{{ url_for('laptops.find') }}" class="btn btn-outline-primary">
+        Browse All Devices <i data-lucide="arrow-right" style="width: 15px; height: 15px;"></i>
+      </a>
+    </div>
+
+    <!-- Interactive Filter Chips -->
+    <div class="filter-chips-wrapper">
+      <button class="filter-chip-btn active" data-filter="all">
+        <i data-lucide="layers" style="width: 14px; height: 14px;"></i> All Devices
+      </button>
+      <button class="filter-chip-btn" data-filter="high-ram">
+        <i data-lucide="cpu" style="width: 14px; height: 14px;"></i> 16 GB+ RAM
+      </button>
+      <button class="filter-chip-btn" data-filter="linux">
+        <i data-lucide="terminal" style="width: 14px; height: 14px;"></i> Linux & DevOps
+      </button>
+      <button class="filter-chip-btn" data-filter="windows">
+        <i data-lucide="monitor" style="width: 14px; height: 14px;"></i> Windows Systems
+      </button>
+    </div>
+
+    <!-- Laptops Grid -->
+    <div class="laptops-grid" id="featured-grid">
+      {% for laptop in featured_laptops %}
+      <div class="laptop-card" 
+           data-ram="{{ laptop.ram }}" 
+           data-os="{{ laptop.operating_system }}"
+           data-condition="{{ laptop.condition }}">
+        {% if laptop.image_path %}
+          <img src="{{ url_for('static', filename=laptop.image_path) }}" alt="{{ laptop.title }}" class="laptop-card-img">
+        {% else %}
+          <div class="laptop-card-placeholder">
+            <i data-lucide="laptop" style="width: 44px; height: 44px; stroke-width: 1.5;"></i>
+            <span style="font-size: 0.85rem; font-weight: 600; color: var(--text-primary);">{{ laptop.brand }} Hardware</span>
+          </div>
+        {% endif %}
+        
+        <div class="laptop-card-body">
+          <div class="laptop-card-meta">
+            <span class="badge {{ laptop.condition|lower }} badge-info">{{ laptop.condition }}</span>
+            <span class="badge badge-success">
+              <span class="pulse-dot"></span> Available
+            </span>
+          </div>
+
+          <h3 class="laptop-card-title">{{ laptop.title }}</h3>
+
+          <div class="laptop-specs-pills">
+            <span class="spec-pill"><i data-lucide="cpu" style="width: 12px; height: 12px;"></i> {{ laptop.processor }}</span>
+            <span class="spec-pill">{{ laptop.ram }}</span>
+            <span class="spec-pill">{{ laptop.storage }}</span>
+            <span class="spec-pill">{{ laptop.operating_system }}</span>
+          </div>
+
+          {% if laptop.academic_suitability %}
+          <p class="laptop-suitability">
+            <strong>Best For:</strong> {{ laptop.academic_suitability }}
+          </p>
+          {% endif %}
+        </div>
+
+        <div class="laptop-card-footer">
+          <span style="font-size: 0.85rem; color: var(--text-muted);">
+            Lender: <strong style="color: var(--text-primary);">{{ laptop.lender.full_name.split(' ')[0] }}</strong> ({{ laptop.lender.department }})
+          </span>
+          <a href="{{ url_for('laptops.detail', laptop_id=laptop.id) }}" class="btn btn-primary btn-sm">
+            View & Request
+          </a>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+<!-- How It Works Section (Connected Glowing Pathway) -->
+<section style="padding: 4.5rem 0;">
+  <div class="container">
+    <div style="text-align: center; max-width: 650px; margin: 0 auto 3.5rem;">
+      <span class="bento-tag">
+        <i data-lucide="git-commit" style="width: 14px; height: 14px;"></i> Simple 4-Step Pathway
+      </span>
+      <h2 style="font-size: clamp(2rem, 3.5vw, 2.6rem); font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">
+        How LappyShare Works
+      </h2>
+      <p style="color: var(--text-muted); font-size: 1.05rem;">
+        Four straightforward steps to borrow or lend academic computing gear without any red tape.
+      </p>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 1.5rem;">
+      <div class="bento-card" style="padding: 1.75rem; text-align: center;">
+        <div style="width: 46px; height: 46px; border-radius: 50%; background: var(--primary-light); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-weight: 800; font-size: 1.15rem; box-shadow: 0 0 15px var(--primary-glow);">
+          1
+        </div>
+        <h4 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 700;">Find or List</h4>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.55;">
+          Filter devices by processor and RAM, or list your spare laptop to help peers on campus.
+        </p>
+      </div>
+
+      <div class="bento-card" style="padding: 1.75rem; text-align: center;">
+        <div style="width: 46px; height: 46px; border-radius: 50%; background: var(--secondary-light); color: var(--secondary); border: 1px solid rgba(129, 140, 248, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-weight: 800; font-size: 1.15rem; box-shadow: 0 0 15px var(--secondary-glow);">
+          2
+        </div>
+        <h4 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 700;">Submit Request</h4>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.55;">
+          Select academic dates and mention your purpose: ML lab, project viva, or software hackathon.
+        </p>
+      </div>
+
+      <div class="bento-card" style="padding: 1.75rem; text-align: center;">
+        <div style="width: 46px; height: 46px; border-radius: 50%; background: var(--success-bg); color: var(--success-text); border: 1px solid rgba(16, 185, 129, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-weight: 800; font-size: 1.15rem; box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);">
+          3
+        </div>
+        <h4 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 700;">Verify & Handover</h4>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.55;">
+          Meet at a campus safe zone, verify condition checklist together, and validate handover via QR code.
+        </p>
+      </div>
+
+      <div class="bento-card" style="padding: 1.75rem; text-align: center;">
+        <div style="width: 46px; height: 46px; border-radius: 50%; background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(251, 191, 36, 0.4); display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem; font-weight: 800; font-size: 1.15rem; box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);">
+          4
+        </div>
+        <h4 style="font-size: 1.15rem; color: var(--text-primary); margin-bottom: 0.5rem; font-weight: 700;">Return & Earn</h4>
+        <p style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.55;">
+          Return on schedule. Lenders gain +5 Coins and borrowers gain +2 Coins to unlock merit recognition.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Interactive Rewards & Impact Calculator -->
+<section style="padding: 4.5rem 0; border-top: 1px solid var(--border-glass); background: rgba(0, 0, 0, 0.15);">
+  <div class="container">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3rem; align-items: center;">
+      <div>
+        <div class="coin-badge" style="margin-bottom: 1.25rem;">
+          <i data-lucide="award" style="width: 16px; height: 16px;"></i>
+          <span>LappyCoins Community Economy</span>
+        </div>
+        
+        <h2 style="font-size: clamp(2rem, 3.5vw, 2.7rem); font-weight: 800; color: var(--text-primary); margin-bottom: 1.25rem; line-height: 1.15; letter-spacing: -0.02em;">
+          Rewarding Students Who Power The Campus
+        </h2>
+        
+        <p style="color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2rem; line-height: 1.65;">
+          LappyCoins are merit and recognition tokens given to students who share computing gear. Borrowing is always free; your coins build campus standing and unlock community perks.
+        </p>
+
+        <div style="display: flex; flex-direction: column; gap: 0.85rem;">
+          <div style="display: flex; align-items: center; gap: 1.25rem; background: var(--bg-glass-card); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
+            <span style="font-weight: 800; color: #fbbf24; font-size: 1.35rem; font-family: var(--font-mono);">+10</span>
+            <div>
+              <strong style="color: var(--text-primary);">List a Verified Laptop</strong>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">Rewarded once your device is vetted and available for peers.</div>
+            </div>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 1.25rem; background: var(--bg-glass-card); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
+            <span style="font-weight: 800; color: #fbbf24; font-size: 1.35rem; font-family: var(--font-mono);">+5</span>
+            <div>
+              <strong style="color: var(--text-primary);">Complete Lending Period</strong>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">Credited immediately upon successful peer return.</div>
+            </div>
+          </div>
+          
+          <div style="display: flex; align-items: center; gap: 1.25rem; background: var(--bg-glass-card); padding: 1rem 1.25rem; border-radius: var(--radius-md); border: 1px solid var(--border-glass);">
+            <span style="font-weight: 800; color: #fbbf24; font-size: 1.35rem; font-family: var(--font-mono);">+2</span>
+            <div>
+              <strong style="color: var(--text-primary);">Punctual Care & Return</strong>
+              <div style="color: var(--text-muted); font-size: 0.85rem;">Rewarded to borrowers who maintain good hardware custody.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Live Interactive Rewards Calculator Box -->
+      <div class="calc-glass-box">
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem;">
+          <h3 style="font-size: 1.25rem; font-weight: 800; color: var(--text-primary);">
+            Impact & Rewards Calculator
+          </h3>
+          <span class="badge badge-primary">Interactive</span>
+        </div>
+
+        <div class="calc-slider-group">
+          <div class="calc-slider-header">
+            <span style="color: var(--text-primary);">Laptops Listed by You:</span>
+            <span id="slider-laptops-val" style="font-family: var(--font-mono); color: var(--primary); font-weight: 700;">1 Laptop</span>
+          </div>
+          <input type="range" min="1" max="5" value="1" id="slider-laptops" class="calc-slider">
+        </div>
+
+        <div class="calc-slider-group">
+          <div class="calc-slider-header">
+            <span style="color: var(--text-primary);">Active Loan Periods:</span>
+            <span id="slider-loans-val" style="font-family: var(--font-mono); color: var(--primary); font-weight: 700;">3 Loans</span>
+          </div>
+          <input type="range" min="1" max="15" value="3" id="slider-loans" class="calc-slider">
+        </div>
+
+        <div class="calc-result-badge">
+          <div style="font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-muted); margin-bottom: 0.4rem;">
+            Estimated LappyCoins
+          </div>
+          <div class="calc-coins-num" id="calc-total-coins">25</div>
+          <div style="font-size: 0.88rem; color: var(--text-primary); margin-top: 0.4rem;">
+            Reputation Tier: <strong id="calc-tier-badge" style="color: #38bdf8;">Silver Contributor</strong>
+          </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+          <a href="{{ url_for('auth.register') }}?role=lender" class="btn btn-primary" style="width: 100%;">
+            Start Lending & Earning Coins
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Frequently Asked Questions (Interactive Accordion) -->
+<section style="padding: 4.5rem 0;">
+  <div class="container" style="max-width: 860px;">
+    <div style="text-align: center; margin-bottom: 3.5rem;">
+      <span class="bento-tag">
+        <i data-lucide="help-circle" style="width: 14px; height: 14px;"></i> Clear Answers
+      </span>
+      <h2 style="font-size: clamp(2rem, 3.5vw, 2.6rem); font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">
+        Frequently Asked Questions
+      </h2>
+      <p style="color: var(--text-muted); font-size: 1.05rem;">
+        Everything you need to know about peer-to-peer campus hardware lending.
+      </p>
+    </div>
+
+    <div class="accordion-group">
+      <div class="accordion-item active">
+        <div class="accordion-header">
+          <div class="accordion-title">Who is eligible to participate in LappyShare?</div>
+          <i data-lucide="chevron-down" class="accordion-icon" style="width: 20px; height: 20px;"></i>
+        </div>
+        <div class="accordion-body">
+          <p>Any actively enrolled university or college student with a verified college email address. Students can participate as borrowers when they need computing power for coursework, and as lenders whenever their laptop is idle.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <div class="accordion-title">Are there any rental charges or hidden fees?</div>
+          <i data-lucide="chevron-down" class="accordion-icon" style="width: 20px; height: 20px;"></i>
+        </div>
+        <div class="accordion-body">
+          <p>Zero monetary cost. LappyShare is 100% voluntary and academic-focused. LappyCoins are non-monetary merit tokens used purely for campus reputation and community recognition.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <div class="accordion-title">How is hardware safety and custody guaranteed?</div>
+          <i data-lucide="chevron-down" class="accordion-icon" style="width: 20px; height: 20px;"></i>
+        </div>
+        <div class="accordion-body">
+          <p>Lenders and borrowers conduct a mandatory pre-handover hardware inspection (screen condition, ports, keyboard, charger). Handover is completed via encrypted QR code validation, and all transactions are tied to verified student IDs overseen by campus administration.</p>
+        </div>
+      </div>
+
+      <div class="accordion-item">
+        <div class="accordion-header">
+          <div class="accordion-title">What happens if a device is returned late or damaged?</div>
+          <i data-lucide="chevron-down" class="accordion-icon" style="width: 20px; height: 20px;"></i>
+        </div>
+        <div class="accordion-body">
+          <p>Any damage or overdue return is logged immediately during the return inspection. Accounts with overdue flags or unresolved disputes are suspended and referred to the institutional academic lab coordinator.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Bottom Ambient Call to Action Banner -->
+<section style="padding: 0 0 5rem;">
+  <div class="container">
+    <div class="bento-card" style="text-align: center; padding: 3.5rem 2rem; background: linear-gradient(135deg, rgba(56, 189, 248, 0.12) 0%, rgba(99, 102, 241, 0.15) 100%); border-color: rgba(56, 189, 248, 0.3);">
+      <h2 style="font-size: clamp(2rem, 3.5vw, 2.7rem); font-weight: 800; color: var(--text-primary); margin-bottom: 0.85rem; letter-spacing: -0.02em;">
+        Ready to Empower Your Campus?
+      </h2>
+      <p style="color: var(--text-muted); font-size: 1.1rem; max-width: 600px; margin: 0 auto 2rem;">
+        Whether you have a spare workstation or need hardware for your next lab test, join hundreds of students on LappyShare today.
+      </p>
+      <div style="display: flex; justify-content: center; gap: 1rem; flex-wrap: wrap;">
+        <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg btn-shimmer">
+          Create Free Student Account
+        </a>
+        <a href="{{ url_for('laptops.find') }}" class="btn btn-outline btn-lg">
+          Explore Hardware Fleet
+        </a>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

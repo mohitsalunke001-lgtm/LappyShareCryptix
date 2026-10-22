@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}My Account Profile — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3rem 1.25rem; max-width: 860px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">Student Account Profile</h1>
+      <p style="color: var(--text-muted);">Manage your academic details and security settings</p>
+    </div>
+    <a href="{{ url_for('rewards.index') }}" class="coin-badge" style="font-size: 0.95rem; padding: 0.4rem 1rem;">
+      <i data-lucide="award"></i> {{ user.coin_balance }} LappyCoins
+    </a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Profile Info Form -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title">Academic Profile</h3>
+      </div>
+      <div class="card-body">
+        <form action="{{ url_for('auth.account') }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+          <input type="hidden" name="action" value="update_profile">
+
+          <div class="form-group">
+            <label class="form-label">Full Name</label>
+            <input type="text" name="full_name" class="form-control" value="{{ user.full_name }}" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Email (Read-only)</label>
+              <input type="email" class="form-control" value="{{ user.email }}" disabled style="background: var(--bg-alt); color: var(--text-muted);">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number</label>
+              <input type="tel" name="phone" class="form-control" value="{{ user.phone }}" required>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">College / University</label>
+            <input type="text" name="college_name" class="form-control" value="{{ user.college_name }}" required>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Department / Branch</label>
+              <input type="text" name="department" class="form-control" value="{{ user.department }}" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Year of Study</label>
+              <input type="text" name="year_of_study" class="form-control" value="{{ user.year_of_study }}" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+            <div class="form-group">
+              <label class="form-label">Roll Number</label>
+              <input type="text" name="roll_number" class="form-control" value="{{ user.roll_number or '' }}">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Default Dashboard View</label>
+              <select name="role" class="form-select">
+                <option value="borrower" {% if user.role == 'borrower' %}selected{% endif %}>Borrower Hub</option>
+                <option value="lender" {% if user.role == 'lender' %}selected{% endif %}>Lender Hub</option>
+              </select>
+            </div>
+          </div>
+
+          <button type="submit" class="btn btn-primary">Save Profile Changes</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Security & Password -->
+    <div>
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <h3 class="card-title">Change Password</h3>
+        </div>
+        <div class="card-body">
+          <form action="{{ url_for('auth.account') }}" method="POST">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="action" value="change_password">
+
+            <div class="form-group">
+              <label class="form-label">Current Password</label>
+              <input type="password" name="current_password" class="form-control" required>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">New Password</label>
+              <input type="password" name="new_password" class="form-control" required placeholder="Min 6 chars">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Confirm New Password</label>
+              <input type="password" name="confirm_password" class="form-control" required>
+            </div>
+
+            <button type="submit" class="btn btn-outline-primary" style="width: 100%;">Update Password</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-body">
+          <h4 style="font-size: 0.95rem; color: var(--primary); margin-bottom: 0.5rem;">Quick Switch Mode</h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">
+            You can freely use both features anytime:
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 0.5rem;">
+            <a href="{{ url_for('borrower.dashboard') }}" class="btn btn-outline btn-sm" style="width: 100%; justify-content: flex-start;">
+              <i data-lucide="book-open"></i> Go to Borrower Dashboard
+            </a>
+            <a href="{{ url_for('lender.dashboard') }}" class="btn btn-outline btn-sm" style="width: 100%; justify-content: flex-start;">
+              <i data-lucide="laptop"></i> Go to Lender Dashboard
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

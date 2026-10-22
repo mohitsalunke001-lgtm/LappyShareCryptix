@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Request {{ request.reference_code }} — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem; max-width: 880px;">
+  <div style="margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+    <div>
+      <span class="badge {{ request.status|status_badge }}" style="margin-bottom: 0.5rem; font-size: 0.85rem; padding: 0.35rem 0.85rem;">
+        Status: {{ request.status|capitalize }}
+      </span>
+      <h1 style="font-size: 1.85rem; font-weight: 800; color: var(--primary);">
+        Request Reference: {{ request.reference_code }}
+      </h1>
+      <p style="color: var(--text-muted); font-size: 0.9rem;">
+        Submitted on {{ request.created_at|format_date("%b %d, %Y at %I:%M %p") }}
+      </p>
+    </div>
+
+    <div>
+      {% if is_borrower %}
+        <a href="{{ url_for('borrower.my_requests') }}" class="btn btn-outline btn-sm">&larr; Back to My Requests</a>
+      {% elif is_lender %}
+        <a href="{{ url_for('lender.incoming_requests') }}" class="btn btn-outline btn-sm">&larr; Back to Incoming Requests</a>
+      {% else %}
+        <a href="{{ url_for('admin.requests') }}" class="btn btn-outline btn-sm">&larr; Back to Admin Panel</a>
+      {% endif %}
+    </div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem;">
+    <!-- Left Details -->
+    <div>
+      <!-- Hardware Card -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <h3 class="card-title">Requested Hardware</h3>
+        </div>
+        <div class="card-body">
+          <h4 style="font-size: 1.25rem; color: var(--primary); margin-bottom: 0.5rem;">
+            {{ request.laptop.title }}
+          </h4>
+          <div class="laptop-specs-pills" style="margin-bottom: 1rem;">
+            <span class="spec-pill">{{ request.laptop.processor }}</span>
+            <span class="spec-pill">{{ request.laptop.ram }}</span>
+            <span class="spec-pill">{{ request.laptop.storage }}</span>
+            <span class="spec-pill">{{ request.laptop.operating_system }}</span>
+          </div>
+          {% if request.laptop.lending_guidelines %}
+            <div style="background: var(--bg-alt); padding: 0.75rem 1rem; border-radius: var(--radius-sm); font-size: 0.88rem;">
+              <strong>Lending Guidelines:</strong> {{ request.laptop.lending_guidelines }}
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Schedule & Purpose Card -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <h3 class="card-title">Academic Reservation Terms</h3>
+        </div>
+        <div class="card-body">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.25rem;">
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Pickup Date</span>
+              <strong style="color: var(--primary); font-size: 1rem;">{{ request.start_date|format_date }}</strong>
+            </div>
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Expected Return Date</span>
+              <strong style="color: var(--primary); font-size: 1rem;">{{ request.end_date|format_date }}</strong>
+            </div>
+          </div>
+
+          <div style="margin-bottom: 1rem;">
+            <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Academic Purpose</span>
+            <strong style="color: var(--primary);">{{ request.purpose }}</strong>
+            {% if request.purpose_details %}
+              <p style="color: var(--text-dark); font-size: 0.88rem; margin-top: 0.25rem;">{{ request.purpose_details }}</p>
+            {% endif %}
+          </div>
+
+          {% if request.borrower_message %}
+            <div>
+              <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Message to Lender</span>
+              <p style="font-size: 0.88rem; color: var(--text-muted); font-style: italic; background: var(--bg-alt); padding: 0.65rem 0.85rem; border-radius: var(--radius-sm); margin-top: 0.25rem;">
+                "{{ request.borrower_message }}"
+              </p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Handover and Return Inspection Logs -->
+      {% if record %}
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">Inspection & Audit History</h3>
+        </div>
+        <div class="card-body">
+          <div style="display: flex; flex-direction: column; gap: 1rem;">
+            <!-- Handover info -->
+            <div style="border-left: 3px solid var(--primary); padding-left: 1rem;">
+              <strong style="color: var(--primary); display: block;">Handover Stage</strong>
+              {% if record.handover_confirmed %}
+                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                  Confirmed on {{ record.handover_date|format_date("%b %d, %Y at %I:%M %p") }} &bull; Condition: <strong>{{ record.handover_condition }}</strong>
+                </span>
+                {% if record.handover_notes %}
+                  <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 0.25rem;">Notes: {{ record.handover_notes }}</p>
+                {% endif %}
+              {% else %}
+                <span style="font-size: 0.85rem; color: var(--warning-text);">Awaiting physical handover between lender and borrower.</span>
+              {% endif %}
+            </div>
+
+            <!-- Return info -->
+            <div style="border-left: 3px solid {% if record.damage_reported %}var(--error){% else %}var(--success){% endif %}; padding-left: 1rem;">
+              <strong style="color: var(--primary); display: block;">Return Stage</strong>
+              {% if record.return_confirmed %}
+                <span style="font-size: 0.85rem; color: var(--text-muted);">
+                  Returned on {{ record.return_date|format_date("%b %d, %Y at %I:%M %p") }} &bull; Condition: <strong>{{ record.return_condition }}</strong>
+                </span>
+                {% if record.damage_reported %}
+                  <div style="color: var(--error); font-weight: 700; font-size: 0.85rem; margin-top: 0.25rem;">
+                    Damage Flagged: {{ record.damage_details }}
+                  </div>
+                {% endif %}
+              {% else %}
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Pending return on or before scheduled due date.</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Right Sidebar: Coordination & QR Code -->
+    <div>
+      <!-- Contact Coordination Card -->
+      <div class="card" style="margin-bottom: 1.5rem;">
+        <div class="card-header">
+          <h3 class="card-title">Campus Coordination</h3>
+        </div>
+        <div class="card-body">
+          <div style="margin-bottom: 1.25rem;">
+            <span style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; display: block;">Lender</span>
+            <strong style="color: var(--primary); font-size: 1rem; display: block;">{{ request.laptop.lender.full_name }}</strong>
+            <span style="font-size: 0.85rem; color: var(--text-muted); display: block;">{{ request.laptop.lender.department }}</span>
+            <div style="margin-top: 0.35rem; font-size: 0.88rem; color: var(--secondary); font-weight: 600;">
+              <i data-lucide="phone" style="width: 14px; height: 14px; display: inline;"></i> {{ request.laptop.lender.phone }}
+            </div>
+          </div>
+
+          <div>
+            <span style="font-size: 0.78rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; display: block;">Borrower</span>
+            <strong style="color: var(--primary); font-size: 1rem; display: block;">{{ request.borrower.full_name }}</strong>
+            <span style="font-size: 0.85rem; color: var(--text-muted); display: block;">{{ request.borrower.department }} ({{ request.borrower.year_of_study }})</span>
+            <div style="margin-top: 0.35rem; font-size: 0.88rem; color: var(--secondary); font-weight: 600;">
+              <i data-lucide="phone" style="width: 14px; height: 14px; display: inline;"></i> {{ request.borrower.phone }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Single-Use QR Handover / Return Card -->
+      {% if record and request.status in ['approved', 'borrowed'] %}
+      <div class="card" style="text-align: center;">
+        <div class="card-header">
+          <h3 class="card-title" style="font-size: 1rem;">
+            {% if request.status == 'approved' %}
+              Handover QR Pass
+            {% else %}
+              Return Verification QR
+            {% endif %}
+          </h3>
+        </div>
+        <div class="card-body">
+          {% set qr_type = 'handover' if request.status == 'approved' else 'return' %}
+          <img src="{{ url_for('requests.generate_qr', request_id=request.id, token_type=qr_type) }}" alt="QR Pass" style="max-width: 170px; margin: 0 auto 0.75rem; border: 1px solid var(--border); border-radius: var(--radius-md); padding: 0.5rem;">
+          <p style="font-size: 0.78rem; color: var(--text-muted); margin-bottom: 0.5rem;">
+            Scan in the QR Verification tool during campus handover.
+          </p>
+          <a href="{{ url_for('requests.verify_qr') }}" class="btn btn-outline btn-sm" style="width: 100%;">
+            Open QR Verifier
+          </a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

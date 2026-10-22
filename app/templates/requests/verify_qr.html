@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block title %}Verify QR Handover / Return — LappyShare{% endblock %}
+
+{% block extra_head %}
+<!-- HTML5 QR Code Scanner Library -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3.5rem 1.25rem; max-width: 620px;">
+  <div class="card" style="box-shadow: var(--shadow-lg);">
+    <div class="card-header" style="text-align: center; display: block; padding: 2rem 2rem 1.25rem;">
+      <div style="width: 52px; height: 52px; border-radius: 50%; background: var(--secondary-light); color: var(--secondary); display: flex; align-items: center; justify-content: center; margin: 0 auto 1rem; border: 1px solid rgba(129, 140, 248, 0.3);">
+        <i data-lucide="qr-code" style="width: 26px; height: 26px;"></i>
+      </div>
+      <h2 style="font-size: 1.7rem; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;">
+        QR Handover & Return Verification
+      </h2>
+      <p style="color: var(--text-muted); font-size: 0.92rem; margin-top: 0.35rem;">
+        Confirm a device handover or return instantly using live camera scan or token input
+      </p>
+    </div>
+
+    <div class="card-body" style="padding: 1.75rem 2rem 2rem;">
+      
+      <!-- Live Camera Scanner Container (Toggleable) -->
+      <div style="text-align: center; margin-bottom: 1.75rem;">
+        <button type="button" id="toggle-camera-btn" class="btn btn-secondary" style="width: 100%;">
+          <i data-lucide="camera" style="width: 18px; height: 18px;"></i>
+          <span id="camera-btn-text">Open Live Camera Scanner</span>
+        </button>
+      </div>
+
+      <div id="qr-reader-container" style="display: none; margin-bottom: 1.75rem; background: var(--bg-surface-elevated); border-radius: var(--radius-lg); padding: 1rem; border: 1px solid var(--border-glass);">
+        <div id="qr-reader" style="width: 100%; border-radius: var(--radius-md); overflow: hidden;"></div>
+        <p style="font-size: 0.8rem; color: var(--text-muted); text-align: center; margin-top: 0.5rem;">
+          Point your phone or laptop camera at the QR code shown by your peer.
+        </p>
+      </div>
+
+      <!-- Verification Form -->
+      <form action="{{ url_for('requests.verify_qr') }}" method="POST" id="qr-verify-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div class="form-group">
+          <label class="form-label" style="font-weight: 700;">QR Token or Scanned String *</label>
+          <input type="text" 
+                 name="qr_code_str" 
+                 id="qr-input" 
+                 class="form-control" 
+                 placeholder="e.g. LAPPYSHARE:HANDOVER:REQ-2026-XXXX:token or raw token" 
+                 required 
+                 autofocus>
+          <span class="form-hint">
+            Scan using the camera button above, or manually type the alphanumeric token shown under the QR pass.
+          </span>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 0.85rem;">
+          <i data-lucide="shield-check" style="width: 18px; height: 18px;"></i> Verify & Update Reservation
+        </button>
+      </form>
+
+      <!-- Step-by-Step Guidance Box -->
+      <div style="background: var(--bg-alt); padding: 1.25rem; border-radius: var(--radius-lg); margin-top: 2rem; font-size: 0.88rem; color: var(--text-muted); border: 1px solid var(--border-glass);">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.6rem; color: var(--text-primary); font-weight: 700;">
+          <i data-lucide="info" style="width: 16px; height: 16px; color: var(--primary);"></i>
+          <span>Where is the QR Code located?</span>
+        </div>
+        <ul style="padding-left: 1.25rem; line-height: 1.6; margin-bottom: 0;">
+          <li><strong>For Handover:</strong> The Lender opens their <em>Lender Hub &rarr; Active Requests &rarr; Handover Pass</em> to display the QR code.</li>
+          <li><strong>For Return:</strong> Either student opens the reservation details page to reveal the <em>Return Verification QR</em>.</li>
+          <li><strong>Verification:</strong> Scanning or submitting the token changes the status and credits <strong>LappyCoins</strong> automatically!</li>
+        </ul>
+      </div>
+
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_scripts %}
+<script>
+  let html5QrCode = null;
+  const toggleBtn = document.getElementById("toggle-camera-btn");
+  const readerContainer = document.getElementById("qr-reader-container");
+  const qrInput = document.getElementById("qr-input");
+  const qrForm = document.getElementById("qr-verify-form");
+  const cameraBtnText = document.getElementById("camera-btn-text");
+
+  if (toggleBtn && readerContainer) {
+    toggleBtn.addEventListener("click", function() {
+      if (!html5QrCode) {
+        html5QrCode = new Html5Qrcode("qr-reader");
+      }
+
+      if (readerContainer.style.display === "none") {
+        readerContainer.style.display = "block";
+        cameraBtnText.textContent = "Stop Camera Scanner";
+
+        html5QrCode.start(
+          { facingMode: "environment" },
+          {
+            fps: 10,
+            qrbox: { width: 250, height: 250 }
+          },
+          (decodedText, decodedResult) => {
+            // QR successfully scanned!
+            qrInput.value = decodedText;
+            html5QrCode.stop().then(() => {
+              readerContainer.style.display = "none";
+              cameraBtnText.textContent = "Open Live Camera Scanner";
+              // Auto-submit the form
+              qrForm.submit();
+            });
+          },
+          (errorMessage) => {
+            // Parse error, ignore and continue scanning
+          }
+        ).catch((err) => {
+          alert("Camera access was not granted or not supported by your browser. Please type the token manually.");
+          readerContainer.style.display = "none";
+          cameraBtnText.textContent = "Open Live Camera Scanner";
+        });
+      } else {
+        html5QrCode.stop().then(() => {
+          readerContainer.style.display = "none";
+          cameraBtnText.textContent = "Open Live Camera Scanner";
+        }).catch((err) => {
+          readerContainer.style.display = "none";
+          cameraBtnText.textContent = "Open Live Camera Scanner";
+        });
+      }
+    });
+  }
+</script>
+{% endblock %}

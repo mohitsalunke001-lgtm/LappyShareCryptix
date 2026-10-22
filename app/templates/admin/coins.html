@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% block title %}LappyCoins Management — LappyShare Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">LappyCoins Ledger & Adjustments</h1>
+      <p style="color: var(--text-muted);">Audit campus reward transactions and execute justified manual adjustments</p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
+  </div>
+
+  <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 2rem; margin-bottom: 2.5rem;">
+    <!-- Manual Adjustment Form -->
+    <div class="card">
+      <div class="card-header" style="background: var(--bg-alt);">
+        <h3 class="card-title" style="font-size: 1.05rem;">Manual Balance Adjustment</h3>
+      </div>
+      <div class="card-body">
+        <form action="{{ url_for('admin.coins') }}" method="POST">
+          <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+          <div class="form-group">
+            <label class="form-label">Select Student *</label>
+            <select name="user_id" class="form-select" required>
+              <option value="" disabled selected>Choose a student...</option>
+              {% for u in users %}
+                <option value="{{ u.id }}">{{ u.full_name }} ({{ u.email }}) — {{ u.coin_balance }} coins</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Adjustment Amount (+ or -) *</label>
+            <input type="number" name="amount" class="form-control" placeholder="e.g. 5 or -2" required>
+            <span class="form-hint">Positive number credits coins, negative deducts.</span>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">Mandatory Audit Justification *</label>
+            <textarea name="reason" class="form-control" rows="3" required placeholder="Specify verifiable reason: e.g. Campus peer mentoring award, hackathon volunteer, or dispute resolution."></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary" style="width: 100%;">
+            <i data-lucide="check-circle"></i> Commit Coin Adjustment
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Student Balances Quick Overview -->
+    <div class="card">
+      <div class="card-header">
+        <h3 class="card-title" style="font-size: 1.05rem;">Current Student Balances</h3>
+      </div>
+      <div class="card-body" style="padding: 0; max-height: 380px; overflow-y: auto;">
+        <table class="table" style="font-size: 0.88rem;">
+          <thead>
+            <tr>
+              <th>Student</th>
+              <th>Department</th>
+              <th>Role</th>
+              <th>Current Balance</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for u in users %}
+            <tr>
+              <td>
+                <strong>{{ u.full_name }}</strong>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ u.email }}</div>
+              </td>
+              <td>{{ u.department }}</td>
+              <td><span class="badge badge-info">{{ u.role }}</span></td>
+              <td><strong style="color: #92400e; font-size: 1.05rem;">{{ u.coin_balance }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Global Transaction Ledger -->
+  <div class="card">
+    <div class="card-header">
+      <h3 class="card-title">Recent System Coin Transactions Ledger</h3>
+    </div>
+    <div class="card-body" style="padding: 0;">
+      <div class="table-responsive">
+        <table class="table" style="font-size: 0.88rem;">
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Student</th>
+              <th>Event Type</th>
+              <th>Description</th>
+              <th>Amount</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for tx in transactions %}
+            <tr>
+              <td>{{ tx.created_at|format_date("%b %d, %Y at %I:%M %p") }}</td>
+              <td>
+                <strong>{{ tx.user.full_name }}</strong>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ tx.user.email }}</div>
+              </td>
+              <td><span class="badge badge-secondary">{{ tx.event_type }}</span></td>
+              <td>
+                {{ tx.description }}
+                {% if tx.reference_id %}
+                  <div style="font-size: 0.75rem; font-family: monospace; color: var(--text-muted);">Ref: {{ tx.reference_id }}</div>
+                {% endif %}
+              </td>
+              <td>
+                {% if tx.amount > 0 %}
+                  <strong style="color: var(--success);">+{{ tx.amount }}</strong>
+                {% else %}
+                  <strong style="color: var(--error);">{{ tx.amount }}</strong>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

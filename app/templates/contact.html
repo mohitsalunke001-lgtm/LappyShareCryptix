@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Contact Campus Team — LappyShare{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 3.5rem 1.25rem; max-width: 800px;">
+  <div style="text-align: center; margin-bottom: 2.5rem;">
+    <h1 style="font-size: 2.35rem; font-weight: 800; color: var(--primary); margin-bottom: 0.75rem;">
+      Contact Campus Support
+    </h1>
+    <p style="color: var(--text-muted); font-size: 1.05rem;">
+      Have a question or need administrative assistance? Reach out to the LappyShare coordinators.
+    </p>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding: 2.5rem;">
+      <form action="{{ url_for('main.contact') }}" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem;">
+          <div class="form-group">
+            <label class="form-label">Full Name *</label>
+            <input type="text" name="name" class="form-control" required placeholder="Your full name" value="{{ current_user.full_name if current_user else '' }}">
+          </div>
+          <div class="form-group">
+            <label class="form-label">College Email Address *</label>
+            <input type="email" name="email" class="form-control" required placeholder="student@college.edu" value="{{ current_user.email if current_user else '' }}">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Subject</label>
+          <input type="text" name="subject" class="form-control" placeholder="e.g. Device query, account help, or feedback">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Message *</label>
+          <textarea name="message" class="form-control" rows="5" required placeholder="How can we assist you with LappyShare?"></textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+          <i data-lucide="send"></i> Send Inquiry to Coordinators
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Manage Laptops — LappyShare Admin{% endblock %}
+
+{% block content %}
+<div class="container" style="padding: 2.5rem 1.25rem;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+    <div>
+      <h1 style="font-size: 2rem; font-weight: 800; color: var(--primary);">Platform Laptop Inventory</h1>
+      <p style="color: var(--text-muted);">Oversee device condition, maintenance flags, and owner accountability</p>
+    </div>
+    <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body" style="padding: 0;">
+      <div class="table-responsive">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Device Details</th>
+              <th>Owner / Lender</th>
+              <th>Hardware Specifications</th>
+              <th>Condition</th>
+              <th>Platform Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for l in laptops %}
+            <tr>
+              <td>
+                <strong>{{ l.title }}</strong>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">Listed: {{ l.created_at|format_date }}</div>
+              </td>
+              <td>
+                <strong>{{ l.lender.full_name }}</strong>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ l.lender.department }} &bull; {{ l.lender.phone }}</div>
+              </td>
+              <td>
+                <div style="font-size: 0.85rem;">{{ l.processor }}</div>
+                <div style="font-size: 0.78rem; color: var(--text-muted);">{{ l.ram }} &bull; {{ l.storage }} &bull; {{ l.operating_system }}</div>
+              </td>
+              <td>
+                <span class="badge {{ l.condition|lower }} badge-info">{{ l.condition }}</span>
+              </td>
+              <td>
+                <span class="badge {{ l.current_status|status_badge }}">{{ l.current_status }}</span>
+                {% if l.under_maintenance and l.maintenance_notes %}
+                  <div style="font-size: 0.75rem; color: var(--warning-text); margin-top: 0.2rem;" title="{{ l.maintenance_notes }}">
+                    {{ l.maintenance_notes }}
+                  </div>
+                {% endif %}
+              </td>
+              <td>
+                <div style="display: flex; gap: 0.35rem; align-items: center;">
+                  <form action="{{ url_for('admin.toggle_laptop_maintenance', laptop_id=l.id) }}" method="POST">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    {% if l.under_maintenance %}
+                      <button type="submit" class="btn btn-success btn-sm">Clear Maint.</button>
+                    {% else %}
+                      <button type="submit" class="btn btn-outline btn-sm" style="color: var(--warning-text);">Flag Maint.</button>
+                    {% endif %}
+                  </form>
+                  <a href="{{ url_for('laptops.detail', laptop_id=l.id) }}" class="btn btn-outline btn-sm">View</a>
+                </div>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
