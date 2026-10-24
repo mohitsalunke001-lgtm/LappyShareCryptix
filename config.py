@@ -1,4 +1,5 @@
 import os
+import tempfile
 from pathlib import Path
 from dotenv import load_dotenv
 
@@ -41,6 +42,8 @@ def get_database_uri():
         if uri.startswith("postgres://"):
             uri = uri.replace("postgres://", "postgresql://", 1)
         return uri
+    if os.environ.get("VERCEL"):
+        return f"sqlite:///{Path(tempfile.gettempdir()) / 'lappyshare.db'}"
     # Default to SQLite in instance directory
     instance_dir = BASE_DIR / "instance"
     instance_dir.mkdir(exist_ok=True)

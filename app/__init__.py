@@ -1,4 +1,5 @@
 import os
+import tempfile
 from datetime import datetime, timezone
 from flask import Flask, render_template, request, session, g
 from app.models import db, User, Notification
@@ -9,7 +10,11 @@ def create_app(config_name=None):
     if config_name is None:
         config_name = os.environ.get("FLASK_ENV", "development")
         
-    app = Flask(__name__)
+    instance_path = None
+    if os.environ.get("VERCEL"):
+        instance_path = os.path.join(tempfile.gettempdir(), "lappyshare-instance")
+
+    app = Flask(__name__, instance_path=instance_path)
     app.config.from_object(config_by_name.get(config_name, config_by_name["default"]))
     
     # Ensure instance and upload directories exist
