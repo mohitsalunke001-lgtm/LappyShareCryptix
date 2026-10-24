@@ -93,6 +93,10 @@ def create_app(config_name=None):
     app.register_blueprint(rewards_bp, url_prefix="/rewards")
     app.register_blueprint(admin_bp, url_prefix="/admin")
     app.register_blueprint(notifications_bp, url_prefix="/notifications")
+
+    if os.environ.get("VERCEL"):
+        with app.app_context():
+            db.create_all()
     
     # Custom error handlers
     @app.errorhandler(400)
