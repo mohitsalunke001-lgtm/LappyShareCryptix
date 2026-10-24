@@ -165,7 +165,17 @@ python -m unittest discover tests
 
 ---
 
-## 7. Folder Structure
+## 7. Deploying to Vercel
+
+The Vercel configuration routes requests to the Flask application through `api/index.py`. Configure `SECRET_KEY` and `DATABASE_URL` in the Vercel project environment variables. Use a persistent external database for `DATABASE_URL`; the local SQLite fallback and uploaded files are not persistent on Vercel. Initialize the database schema once against that database with:
+
+```powershell
+python -m flask --app wsgi:app init-db
+```
+
+---
+
+## 8. Folder Structure
 
 ```
 lappyshare/
@@ -173,10 +183,14 @@ lappyshare/
 │   config.py                # Configurations (Dev, Testing, Production)
 │   requirements.txt         # Python package dependencies
 │   README.md                # Project documentation and setup guide
+│   vercel.json              # Vercel routing and Python runtime configuration
 │   create_admin.py          # Script to create or update administrator account
 │   seed_data.py             # Realistic campus data populator
 │   .env.example             # Environment variable template
 │   .gitignore               # Git ignore rules for db, venv, and cache
+│
+├───api/
+│   └───index.py             # Vercel Flask function entry point
 │
 ├───app/
 │   │   __init__.py          # Application factory & context processors
